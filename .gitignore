@@ -1,0 +1,17 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+
+# Node
+node_modules/
+
+# Google API secrets
+credentials.json
+token.json
+token.pkl
+token.pickle
+
+# OS
+.DS_Store
+Thumbs.db

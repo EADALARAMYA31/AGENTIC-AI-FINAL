@@ -1,0 +1,28 @@
+{
+  "name": "agentic-ai",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/EADALARAMYA31/AGENTIC-AI-1.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/EADALARAMYA31/AGENTIC-AI-1/issues"
+  },
+  "homepage": "https://github.com/EADALARAMYA31/AGENTIC-AI-1#readme",
+  "description": "",
+  "dependencies": {
+    "body-parser": "^2.2.2",
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "googleapis": "^171.4.0",
+    "node-cron": "^4.2.1",
+    "nodemailer": "^8.0.2"
+  }
+}
