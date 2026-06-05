@@ -37,11 +37,12 @@ def get_calendar_auth_url():
 
     auth_url, state = flow.authorization_url(
         access_type="offline",
-        prompt="consent",
-        include_granted_scopes="true"
+        prompt="consent"
     )
 
     st.session_state["oauth_state"] = state
+    st.session_state["code_verifier"] = flow.code_verifier
+
     return auth_url
 
 
@@ -49,25 +50,21 @@ def get_calendar_auth_url():
 # 2. HANDLE CALLBACK
 # =========================
 def handle_oauth_callback(auth_code):
+
     flow = Flow.from_client_config(
         client_config,
         scopes=SCOPES,
         redirect_uri=REDIRECT_URI
     )
 
-    try:
-        flow.fetch_token(code=auth_code)
+    flow.code_verifier = st.session_state.get("code_verifier")
+    st.write(
+        "VERIFIER =",
+        st.session_state.get("code_verifier")
+    )
+    flow.fetch_token(code=auth_code)
 
-        creds = flow.credentials
-
-        with open("token.pkl", "wb") as f:
-            pickle.dump(creds, f)
-
-        return creds
-
-    except Exception as e:
-        st.error(f"OAuth Error: {e}")
-        return None
+    return flow.credentials
 
 # =========================
 # 3. LOAD SAVED CREDENTIALS
