@@ -44,6 +44,7 @@ from database import (
 # =========================
 st.set_page_config(page_title="AI Scheduler Pro MAX", page_icon="📅", layout="wide")
 st.write("QUERY PARAMS:", dict(st.query_params))
+st.write("CODE =", st.query_params.get("code"))
 for key in ["app_stage", "user_id", "username", "google_connected", "auth_url", "oauth_done", "navigation"]:
     st.session_state.setdefault(key, None)
 
@@ -59,8 +60,13 @@ st.write("APP_STAGE =", st.session_state.get("app_stage"))
 st.write("USER_ID =", st.session_state.get("user_id"))
 st.write("GOOGLE_CONNECTED =", st.session_state.get("google_connected"))
 if code and not st.session_state.get("oauth_done", False):
-    st.session_state["oauth_done"] = True
+    st.write("CALLBACK STARTED")
+
     creds = handle_oauth_callback(code)
+
+    st.write("CREDS =", creds)
+    st.session_state["oauth_done"] = True
+    #creds = handle_oauth_callback(code)
     if creds:
         st.session_state["google_connected"] = True
 
@@ -111,10 +117,17 @@ def auth_page():
 
         if st.button("Login"):
             user = login_user(u, p)
+
+            st.write("LOGIN USER =", user)
+
             if user:
                 st.session_state["user_id"] = user[0]
                 st.session_state["username"] = user[1]
                 st.session_state["app_stage"] = "google"
+
+                st.write("LOGIN SUCCESS")
+                st.write(dict(st.session_state))
+
                 st.rerun()
             else:
                 st.error("Invalid login")
@@ -123,6 +136,8 @@ def auth_page():
 # GOOGLE PAGE
 # =========================
 def google_page():
+    st.write("GOOGLE PAGE")
+    st.write(dict(st.session_state))
     st.title("🔗 Google Calendar Connect")
 
     if st.session_state.get("google_connected"):
