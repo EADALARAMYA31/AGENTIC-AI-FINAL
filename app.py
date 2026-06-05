@@ -39,20 +39,20 @@ from database import (
 # =========================
 # CONFIG
 # =========================
+# =========================
+# CONFIG
+# =========================
 st.set_page_config(page_title="AI Scheduler Pro MAX", page_icon="📅", layout="wide")
 
-for key in ["app_stage", "user_id", "username", "google_connected", "auth_url", "page"]:
+for key in ["app_stage", "user_id", "username", "google_connected", "auth_url", "oauth_done", "navigation"]:
     st.session_state.setdefault(key, None)
 
 if st.session_state.get("app_stage") is None:
-    st.session_state["app_stage"] = "auth"
-if "app_stage" not in st.session_state:
     st.session_state["app_stage"] = "auth"
 
 # =========================
 # OAUTH CALLBACK
 # =========================
-# 1. OAuth callback first
 code = st.query_params.get("code")
 if code and not st.session_state.get("oauth_done", False):
     st.session_state["oauth_done"] = True
@@ -62,9 +62,9 @@ if code and not st.session_state.get("oauth_done", False):
 
         # ✅ Ensure user_id and username are set
         if not st.session_state.get("user_id"):
-            # Map Google profile to your DB user here
             google_name = get_google_profile_name(creds)
-            user = login_user(google_name, None)  # or custom mapping
+            # Map Google profile to DB user if needed
+            user = login_user(google_name, None)  # adjust mapping logic
             if user:
                 st.session_state["user_id"] = user[0]
                 st.session_state["username"] = user[1]
@@ -74,21 +74,6 @@ if code and not st.session_state.get("oauth_done", False):
         st.session_state["app_stage"] = "dashboard"
         st.query_params.clear()
         st.rerun()
-
-
-
-# =========================
-# DATA REFRESH FIX (IMPORTANT)
-# =========================
-def load_data():
-    if not st.session_state.get("user_id"):
-        return [], [], []
-    return (
-        get_events(st.session_state["user_id"]),
-        get_assignments(st.session_state["user_id"]),
-        get_goals(st.session_state["user_id"])
-    )
-
 
 # =========================
 # AUTH PAGE
@@ -113,8 +98,6 @@ def auth_page():
 
         if st.button("Login"):
             user = login_user(u, p)
-            st.write("LOGIN RESULT =", user)
-
             if user:
                 st.session_state["user_id"] = user[0]
                 st.session_state["username"] = user[1]
@@ -123,28 +106,20 @@ def auth_page():
             else:
                 st.error("Invalid login")
 
-
 # =========================
 # GOOGLE PAGE
 # =========================
 def google_page():
     st.title("🔗 Google Calendar Connect")
 
-    #st.write("GOOGLE PAGE SESSION:")
-    #st.write(dict(st.session_state))
-
-    if st.session_state.get("google_connected") and st.session_state.get("app_stage") != "dashboard":
+    if st.session_state.get("google_connected"):
         st.session_state["app_stage"] = "dashboard"
         st.rerun()
 
     if not st.session_state.get("auth_url"):
         st.session_state["auth_url"] = get_calendar_auth_url()
 
-    st.link_button(
-        "Continue with Google",
-        st.session_state["auth_url"]
-    )
-
+    st.link_button("Continue with Google", st.session_state["auth_url"])
 
 # =========================
 # DASHBOARD
@@ -154,12 +129,12 @@ def dashboard():
         st.error("Session expired. Please login again.")
         st.session_state["app_stage"] = "auth"
         st.rerun()
-    #st.write("DASHBOARD SESSION:")
-    #st.write(dict(st.session_state))
-    #st.write("SESSION USER ID =", st.session_state.get("user_id"))
-    #st.write("SESSION USERNAME =", st.session_state.get("username"))
-    #st.title("🚀 AI Scheduler Pro MAX Dashboard")
-    #st.markdown(f"👋 Welcome **{st.session_state['username']}**")
+
+    st.title("🚀 AI Scheduler Pro MAX Dashboard")
+    st.markdown(f"👋 Welcome **{st.session_state['username']}**")
+
+    # ... rest of your dashboard logic ...
+
 
     pages = [
         "🏠 Dashboard",
