@@ -14,10 +14,11 @@ client_config = {
         "client_id": st.secrets["GOOGLE_CLIENT_ID"],
         "client_secret": st.secrets["GOOGLE_CLIENT_SECRET"],
         "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-        "token_uri": "https://oauth2.googleapis.com/token"
+        "token_uri": "https://oauth2.googleapis.com/token",
+        "redirect_uris":["https://agentic-ai-final-fksab93mmxpc67sfmpmz6u.streamlit.app"]
     }
 }
-REDIRECT_URI = "https://agentic-ai-final-fksab93mmxpc67sfmpmz6u.streamlit.app"
+#REDIRECT_URI = "https://agentic-ai-final-fksab93mmxpc67sfmpmz6u.streamlit.app"
 
 # Allow insecure transport for local testing
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
@@ -27,7 +28,7 @@ os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 # 1. GENERATE GOOGLE LOGIN URL
 # =========================
 def get_calendar_auth_url():
-    flow = Flow.from_client_secrets_file(
+    flow = Flow.from_client_config(
         client_config,
         scopes=SCOPES,
         redirect_uri=REDIRECT_URI
@@ -52,7 +53,7 @@ def get_calendar_auth_url():
 # 2. HANDLE CALLBACK
 # =========================
 def handle_oauth_callback(auth_code, state=None):
-    flow = Flow.from_client_secrets_file(
+    flow = Flow.from_client_config(
         client_config,
         scopes=SCOPES,
         redirect_uri=REDIRECT_URI
