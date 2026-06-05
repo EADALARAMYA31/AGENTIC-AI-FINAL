@@ -8,6 +8,7 @@ from googleapiclient.discovery import build
 # =========================
 # CONFIG
 # =========================
+REDIRECT_URI = "https://agentic-ai-final-fksab93mmxpc67sfmpmz6u.streamlit.app"
 SCOPES = ["https://www.googleapis.com/auth/calendar", "https://www.googleapis.com/auth/userinfo.profile", "https://www.googleapis.com/auth/userinfo.email", "openid"]
 client_config = {
     "web": {
@@ -15,7 +16,7 @@ client_config = {
         "client_secret": st.secrets["GOOGLE_CLIENT_SECRET"],
         "auth_uri": "https://accounts.google.com/o/oauth2/auth",
         "token_uri": "https://oauth2.googleapis.com/token",
-        "redirect_uris":["https://agentic-ai-final-fksab93mmxpc67sfmpmz6u.streamlit.app"]
+        "redirect_uris":[REDIRECT_URI]
     }
 }
 #REDIRECT_URI = "https://agentic-ai-final-fksab93mmxpc67sfmpmz6u.streamlit.app"
