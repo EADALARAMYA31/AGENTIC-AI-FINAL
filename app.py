@@ -45,22 +45,29 @@ from database import (
 # CONFIG
 # =========================
 st.set_page_config(page_title="AI Scheduler Pro MAX", page_icon="📅", layout="wide")
-st.write("APP STAGE =", st.session_state.get("app_stage"))
 
 
-defaults = {
-    "app_stage": st.session_state.get("app_stage", "auth"),
-    "user_id": st.session_state.get("user_id", None),
-    "username": st.session_state.get("username", None),
-    "google_connected": st.session_state.get("google_connected", False),
-    "auth_url": st.session_state.get("auth_url", None),
-    "oauth_done": st.session_state.get("oauth_done", False),
-    "navigation": st.session_state.get("navigation", None)
-}
 
-for key, value in defaults.items():
-    if key not in st.session_state:
-        st.session_state[key] = value
+if "app_stage" not in st.session_state:
+    st.session_state["app_stage"] = "auth"
+
+if "user_id" not in st.session_state:
+    st.session_state["user_id"] = None
+
+if "username" not in st.session_state:
+    st.session_state["username"] = None
+
+if "google_connected" not in st.session_state:
+    st.session_state["google_connected"] = False
+
+if "auth_url" not in st.session_state:
+    st.session_state["auth_url"] = None
+
+if "oauth_done" not in st.session_state:
+    st.session_state["oauth_done"] = False
+
+if "navigation" not in st.session_state:
+    st.session_state["navigation"] = None
 st.write("APP STAGE =", st.session_state["app_stage"])
 st.write("FULL URL PARAMS:", dict(st.query_params))
 # =========================
