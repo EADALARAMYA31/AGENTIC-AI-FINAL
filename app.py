@@ -43,7 +43,7 @@ from database import (
 # CONFIG
 # =========================
 st.set_page_config(page_title="AI Scheduler Pro MAX", page_icon="📅", layout="wide")
-
+st.write("QUERY PARAMS:", dict(st.query_params))
 for key in ["app_stage", "user_id", "username", "google_connected", "auth_url", "oauth_done", "navigation"]:
     st.session_state.setdefault(key, None)
 
