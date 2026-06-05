@@ -82,8 +82,6 @@ if code and not st.session_state.get("oauth_done", False):
     creds = handle_oauth_callback(code)
 
     if creds:
-        st.session_state["google_connected"] = True
-
         profile = get_google_profile_info(creds)
         email = profile["email"]
         name = profile["name"]
@@ -96,12 +94,16 @@ if code and not st.session_state.get("oauth_done", False):
 
         st.session_state["user_id"] = user[0]
         st.session_state["username"] = name
+
+        # 🔥 IMPORTANT FIX
         st.session_state["app_stage"] = "dashboard"
 
+        # clear URL
         st.query_params.clear()
+
         st.rerun()
 
-    st.stop()   # 🔥 CRITICAL FIX
+    st.stop()# 🔥 CRITICAL FIX
 
 # =========================
 # AUTH PAGE
