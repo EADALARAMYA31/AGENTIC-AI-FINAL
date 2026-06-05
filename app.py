@@ -53,45 +53,21 @@ if "app_stage" not in st.session_state:
 # OAUTH CALLBACK
 # =========================
 # 1. OAuth callback first
-def main_router():
-    # -----------------------
-    # 1. OAuth callback FIRST
-    # -----------------------
-    code = st.query_params.get("code")
+code = st.query_params.get("code")
+if code and not st.session_state.get("oauth_done", False):
+    st.session_state["oauth_done"] = True
+    creds = handle_oauth_callback(code)
+    if creds:
+        st.session_state["google_connected"] = True
+        # ✅ Make sure user_id and username are set
+        if not st.session_state.get("user_id"):
+            st.session_state["user_id"] = get_google_profile_name(creds)  # or map to DB user
+        if not st.session_state.get("username"):
+            st.session_state["username"] = get_google_profile_name(creds)
+        st.session_state["app_stage"] = "dashboard"
+        st.query_params.clear()
+        st.rerun()
 
-    if code and not st.session_state.get("oauth_done", False):
-        st.session_state["oauth_done"] = True
-
-        creds = handle_oauth_callback(code)
-
-        if creds:
-            st.session_state["google_connected"] = True
-            st.session_state["app_stage"] = "dashboard"
-
-            st.query_params = {}
-            st.rerun()
-
-    # -----------------------
-    # 2. ROUTING SYSTEM
-    # -----------------------
-    stage = st.session_state.get("app_stage", "auth")
-
-    if stage == "auth":
-        auth_page()
-        st.stop()
-
-    elif stage == "google":
-        google_page()
-        st.stop()
-
-    elif stage == "dashboard":
-        dashboard()
-        st.stop()
-
-    else:
-        auth_page()
-        st.stop()
-main_router()
 # =========================
 # DATA REFRESH FIX (IMPORTANT)
 # =========================
@@ -133,16 +109,6 @@ def auth_page():
             if user:
                 st.session_state["user_id"] = user[0]
                 st.session_state["username"] = user[1]
-
-                with open("user_session.pkl", "wb") as f:
-                    pickle.dump(
-                        {
-                            "user_id": user[0],
-                            "username": user[1]
-                        },
-                        f
-                    )
-
                 st.session_state["app_stage"] = "google"
                 st.rerun()
             else:
