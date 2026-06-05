@@ -54,6 +54,10 @@ if st.session_state.get("app_stage") is None:
 # OAUTH CALLBACK
 # =========================
 code = st.query_params.get("code")
+st.write("CODE =", code)
+st.write("APP_STAGE =", st.session_state.get("app_stage"))
+st.write("USER_ID =", st.session_state.get("user_id"))
+st.write("GOOGLE_CONNECTED =", st.session_state.get("google_connected"))
 if code and not st.session_state.get("oauth_done", False):
     st.session_state["oauth_done"] = True
     creds = handle_oauth_callback(code)
