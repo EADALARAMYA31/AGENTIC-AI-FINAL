@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 from groq import Groq
 from datetime import date, datetime, timedelta
 import pickle
+from googleapiclient.discovery import build
 load_dotenv()
 client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
@@ -32,7 +33,8 @@ from database import (
     delete_event,
     delete_goal,
     check_conflict,
-    update_goal_progress  # <-- add this
+    update_goal_progress,
+    get_user_by_email  # <-- add this
 )
 
 
@@ -43,8 +45,16 @@ from database import (
 # CONFIG
 # =========================
 st.set_page_config(page_title="AI Scheduler Pro MAX", page_icon="📅", layout="wide")
-st.write("QUERY PARAMS:", dict(st.query_params))
-st.write("CODE =", st.query_params.get("code"))
+st.write("QUERY PARAMS OBJECT")
+st.write(st.query_params)
+
+st.write("DICT PARAMS")
+st.write(dict(st.query_params))
+
+try:
+    st.write("CODE =", st.query_params["code"])
+except Exception as e:
+    st.write("CODE ERROR:", e)
 for key in ["app_stage", "user_id", "username", "google_connected", "auth_url", "oauth_done", "navigation"]:
     st.session_state.setdefault(key, None)
 
@@ -56,19 +66,21 @@ st.write("FULL URL PARAMS:", dict(st.query_params))
 # =========================
 code = st.query_params.get("code")
 
-if code and not st.session_state.get("oauth_done", False):
-    st.session_state["oauth_done"] = True
+if code:
+    st.write("GOOGLE CODE RECEIVED")
 
     creds = handle_oauth_callback(code)
 
     if creds:
+
         st.session_state["google_connected"] = True
 
-        service = build("oauth2", "v2", credentials=creds)
-        user_info = service.userinfo().get().execute()
+        profile = get_google_profile_info(creds)
 
-        email = user_info.get("email")
-        name = user_info.get("name", "Google Account")
+        email = profile["email"]
+        name = profile["name"]
+
+        st.write("EMAIL =", email)
 
         user = get_user_by_email(email)
 
@@ -81,6 +93,9 @@ if code and not st.session_state.get("oauth_done", False):
         st.session_state["app_stage"] = "dashboard"
 
         st.query_params.clear()
+
+        st.success("Google Login Success")
+
         st.rerun()
 
 

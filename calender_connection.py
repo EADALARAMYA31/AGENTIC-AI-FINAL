@@ -55,21 +55,19 @@ def handle_oauth_callback(auth_code):
         redirect_uri=REDIRECT_URI
     )
 
-    # restore state (IMPORTANT for security)
-    state = st.session_state.get("oauth_state")
+    try:
+        flow.fetch_token(code=auth_code)
 
-    flow.fetch_token(
-        code=auth_code,
-        state=state
-    )
+        creds = flow.credentials
 
-    creds = flow.credentials
+        with open("token.pkl", "wb") as f:
+            pickle.dump(creds, f)
 
-    with open("token.pkl", "wb") as f:
-        pickle.dump(creds, f)
+        return creds
 
-    return creds
-
+    except Exception as e:
+        st.error(f"OAuth Error: {e}")
+        return None
 
 # =========================
 # 3. LOAD SAVED CREDENTIALS
