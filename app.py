@@ -101,7 +101,7 @@ if code and not st.session_state.get("oauth_done", False):
         st.write("DEBUG: username =", st.session_state["username"])
 
         # Clear AFTER setting stage
-        st.query_params.clear()
+        #st.query_params.clear()
         st.rerun()
 
 
@@ -164,6 +164,10 @@ def google_page():
 # DASHBOARD
 # =========================
 def dashboard():
+    # Clear query params once we’re safely in dashboard
+    if "code" in st.query_params:
+        st.query_params.clear()
+
     if not st.session_state.get("user_id"):
         st.error("Session expired. Please login again.")
         st.session_state["app_stage"] = "auth"
