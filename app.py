@@ -70,12 +70,26 @@ if code and not st.session_state.get("oauth_done", False):
 
         user = get_user_by_email(email)
 
+        st.write("EMAIL =", email)
+        st.write("USER BEFORE REGISTER =", user)
+
         if not user:
-            register_user(name, "google-oauth", email=email, provider="google")
+            result = register_user(
+                name,
+                "google-oauth",
+                email=email,
+                provider="google"
+            )
+
+            st.write("REGISTER RESULT =", result)
+
             user = get_user_by_email(email)
 
-        st.write("USER =", user)
-        st.write("TYPE =", type(user))
+    st.write("USER AFTER REGISTER =", user)
+
+    if not user:
+        st.error("User was not created in database")
+        st.stop()
 
         st.session_state["user_id"] = user[0]
         st.session_state["username"] = name
