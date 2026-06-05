@@ -58,7 +58,7 @@ def handle_oauth_callback(auth_code):
         )
 
         # ❌ DO NOT set code_verifier manually
-
+        flow.redirect_uri = REDIRECT_URI
         flow.fetch_token(code=auth_code)
 
         creds = flow.credentials

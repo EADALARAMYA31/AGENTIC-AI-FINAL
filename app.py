@@ -76,6 +76,7 @@ st.write("FULL URL PARAMS:", dict(st.query_params))
 code = st.query_params.get("code")
 
 if code and not st.session_state.get("oauth_done", False):
+
     st.session_state["oauth_done"] = True
 
     creds = handle_oauth_callback(code)
@@ -89,22 +90,18 @@ if code and not st.session_state.get("oauth_done", False):
 
         user = get_user_by_email(email)
 
-        st.write("EMAIL:", email)
-        st.write("USER BEFORE REGISTER:", user)
-
         if not user:
             register_user(name, "google-oauth", email=email, provider="google")
             user = get_user_by_email(email)
 
-        st.write("USER AFTER REGISTER:", user)
-
-        if user:
-            st.session_state["user_id"] = user[0]
-            st.session_state["username"] = name
-            st.session_state["app_stage"] = "dashboard"
+        st.session_state["user_id"] = user[0]
+        st.session_state["username"] = name
+        st.session_state["app_stage"] = "dashboard"
 
         st.query_params.clear()
         st.rerun()
+
+    st.stop()   # 🔥 CRITICAL FIX
 
 # =========================
 # AUTH PAGE
@@ -3996,12 +3993,11 @@ def dashboard():
 # =========================
 # ROUTER
 # =========================
-if st.session_state.get("app_stage") == "dashboard":
-    dashboard()
+if st.session_state["app_stage"] == "auth":
+    auth_page()
 
-elif st.session_state.get("app_stage") == "google":
+elif st.session_state["app_stage"] == "google":
     google_page()
 
-else:
-    st.session_state["app_stage"] = "auth"
-    auth_page()
+elif st.session_state["app_stage"] == "dashboard":
+    dashboard()
