@@ -60,20 +60,15 @@ if code and not st.session_state.get("oauth_done", False):
     if creds:
         st.session_state["google_connected"] = True
 
-        # ✅ Ensure user_id and username are set
-        if not st.session_state.get("user_id"):
-            google_name = get_google_profile_name(creds)
-            # Map Google profile to DB user if needed
-            user = login_user(google_name, None)  # adjust mapping logic
-            if user:
-                st.session_state["user_id"] = user[0]
-                st.session_state["username"] = user[1]
-            else:
-                st.session_state["username"] = google_name
+        # ✅ Use Google identity directly
+        google_name = get_google_profile_name(creds)
+        st.session_state["user_id"] = google_name   # or creds.id_token['email']
+        st.session_state["username"] = google_name
 
         st.session_state["app_stage"] = "dashboard"
         st.query_params.clear()
         st.rerun()
+
 
 # =========================
 # AUTH PAGE
