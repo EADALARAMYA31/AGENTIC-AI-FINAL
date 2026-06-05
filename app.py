@@ -58,9 +58,12 @@ st.write("FULL URL PARAMS:", dict(st.query_params))
 # OAUTH CALLBACK
 # =========================
 code = st.query_params.get("code")
+
 if code and not st.session_state.get("oauth_done", False):
     st.session_state["oauth_done"] = True
+
     creds = handle_oauth_callback(code)
+
     if creds:
         st.session_state["google_connected"] = True
 
@@ -82,15 +85,15 @@ if code and not st.session_state.get("oauth_done", False):
             )
 
             st.write("REGISTER RESULT =", result)
-
             user = get_user_by_email(email)
 
-    st.write("USER AFTER REGISTER =", user)
+        st.write("USER AFTER REGISTER =", user)
 
-    if not user:
-        st.error("User was not created in database")
-        st.stop()
+        if not user:
+            st.error("User was not created in database")
+            st.stop()
 
+        # ✅ FIX: session state MUST be OUTSIDE stop block
         st.session_state["user_id"] = user[0]
         st.session_state["username"] = name
         st.session_state["app_stage"] = "dashboard"
@@ -3998,7 +4001,13 @@ def dashboard():
 # =========================
 if st.session_state["app_stage"] == "auth":
     auth_page()
+
 elif st.session_state["app_stage"] == "google":
     google_page()
+
 elif st.session_state["app_stage"] == "dashboard":
     dashboard()
+
+else:
+    st.session_state["app_stage"] = "auth"
+    auth_page()
