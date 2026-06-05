@@ -104,8 +104,6 @@ if code and not st.session_state.get("oauth_done", False):
         # ✅ Clear only after stage is set
         st.query_params.clear()
         st.rerun()
-    st.stop()
-
 
 
 
