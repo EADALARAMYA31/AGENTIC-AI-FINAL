@@ -49,21 +49,19 @@ st.write("APP STAGE =", st.session_state.get("app_stage"))
 
 
 defaults = {
-    "app_stage": "auth",
-    "user_id": None,
-    "username": None,
-    "google_connected": False,
-    "auth_url": None,
-    "oauth_done": False,
-    "navigation": None
+    "app_stage": st.session_state.get("app_stage", "auth"),
+    "user_id": st.session_state.get("user_id", None),
+    "username": st.session_state.get("username", None),
+    "google_connected": st.session_state.get("google_connected", False),
+    "auth_url": st.session_state.get("auth_url", None),
+    "oauth_done": st.session_state.get("oauth_done", False),
+    "navigation": st.session_state.get("navigation", None)
 }
 
 for key, value in defaults.items():
     if key not in st.session_state:
         st.session_state[key] = value
-
-if "app_stage" not in st.session_state:
-    st.session_state["app_stage"] = "auth"
+st.write("APP STAGE =", st.session_state["app_stage"])
 st.write("FULL URL PARAMS:", dict(st.query_params))
 # =========================
 # OAUTH CALLBACK
