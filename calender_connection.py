@@ -58,9 +58,10 @@ def handle_oauth_callback(auth_code):
     )
 
     try:
-        # ✅ RESTORE VERIFIER
-        with open("verifier.pkl", "rb") as f:
-            flow.code_verifier = pickle.load(f)
+        # Restore verifier generated before redirect
+        if os.path.exists("oauth_verifier.pkl"):
+            with open("oauth_verifier.pkl", "rb") as f:
+                flow.code_verifier = pickle.load(f)
 
         flow.fetch_token(code=auth_code)
 
@@ -69,11 +70,18 @@ def handle_oauth_callback(auth_code):
         with open("token.pkl", "wb") as f:
             pickle.dump(creds, f)
 
+        # Cleanup temporary files
+        if os.path.exists("oauth_verifier.pkl"):
+            os.remove("oauth_verifier.pkl")
+
+        if os.path.exists("oauth_state.pkl"):
+            os.remove("oauth_state.pkl")
+
         return creds
 
     except Exception as e:
-        print("OAUTH ERROR:", e)
-        return None   # ❌ FIXED (you had Nones)
+        st.error(f"OAuth Error: {e}")
+        return Nones
 
 # =========================
 # 3. LOAD SAVED CREDENTIALS
