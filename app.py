@@ -108,8 +108,6 @@ if code and not st.session_state.get("oauth_done", False):
 
         st.rerun()
 
-    st.stop()
-
 
 
 
