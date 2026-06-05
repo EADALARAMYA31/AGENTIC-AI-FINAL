@@ -69,10 +69,13 @@ if code and not st.session_state.get("oauth_done", False):
         name = profile["name"]
 
         user = get_user_by_email(email)
+
         if not user:
-            # Register with Google provider
             register_user(name, "google-oauth", email=email, provider="google")
             user = get_user_by_email(email)
+
+        st.write("USER =", user)
+        st.write("TYPE =", type(user))
 
         st.session_state["user_id"] = user[0]
         st.session_state["username"] = name
