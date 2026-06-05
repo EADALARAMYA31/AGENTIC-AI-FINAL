@@ -48,10 +48,21 @@ st.set_page_config(page_title="AI Scheduler Pro MAX", page_icon="📅", layout="
 st.write("APP STAGE =", st.session_state.get("app_stage"))
 
 
-for key in ["app_stage", "user_id", "username", "google_connected", "auth_url", "oauth_done", "navigation"]:
-    st.session_state.setdefault(key, None)
+defaults = {
+    "app_stage": "auth",
+    "user_id": None,
+    "username": None,
+    "google_connected": False,
+    "auth_url": None,
+    "oauth_done": False,
+    "navigation": None
+}
 
-if st.session_state.get("app_stage") is None:
+for key, value in defaults.items():
+    if key not in st.session_state:
+        st.session_state[key] = value
+
+if "app_stage" not in st.session_state:
     st.session_state["app_stage"] = "auth"
 st.write("FULL URL PARAMS:", dict(st.query_params))
 # =========================
