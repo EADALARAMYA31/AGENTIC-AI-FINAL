@@ -73,37 +73,22 @@ if code and not st.session_state.get("oauth_done", False):
 
         user = get_user_by_email(email)
 
-        st.write("EMAIL =", email)
-        st.write("USER BEFORE REGISTER =", user)
+        st.write("EMAIL:", email)
+        st.write("USER BEFORE REGISTER:", user)
 
         if not user:
-            result = register_user(
-                name,
-                "google-oauth",
-                email=email,
-                provider="google"
-            )
-
-            st.write("REGISTER RESULT =", result)
+            register_user(name, "google-oauth", email=email, provider="google")
             user = get_user_by_email(email)
 
-        st.write("USER AFTER REGISTER =", user)
+        st.write("USER AFTER REGISTER:", user)
 
-        if not user:
-            st.error("User was not created in database")
-            st.stop()
-
-        # ✅ FIX: session state MUST be OUTSIDE stop block
-        st.session_state["user_id"] = user[0]
-        st.session_state["username"] = name
-        st.session_state["app_stage"] = "dashboard"
+        if user:
+            st.session_state["user_id"] = user[0]
+            st.session_state["username"] = name
+            st.session_state["app_stage"] = "dashboard"
 
         st.query_params.clear()
         st.rerun()
-
-
-
-
 
 # =========================
 # AUTH PAGE
@@ -116,11 +101,12 @@ def auth_page():
     with tab2:
         u = st.text_input("Username", key="su")
         p = st.text_input("Password", type="password", key="sp")
+
         if st.button("Signup"):
             if register_user(u, p):
                 st.success("Account Created")
             else:
-                st.error("Exists")
+                st.error("User already exists")
 
     with tab1:
         u = st.text_input("Username", key="lu")
@@ -129,19 +115,14 @@ def auth_page():
         if st.button("Login"):
             user = login_user(u, p)
 
-            st.write("LOGIN USER =", user)
-
             if user:
                 st.session_state["user_id"] = user[0]
                 st.session_state["username"] = user[1]
                 st.session_state["app_stage"] = "google"
-
-                st.write("LOGIN SUCCESS")
-                st.write(dict(st.session_state))
-
                 st.rerun()
             else:
                 st.error("Invalid login")
+
 
 # =========================
 # GOOGLE PAGE
