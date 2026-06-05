@@ -15,7 +15,7 @@ from calender_connection import (
     get_calendar_auth_url,
     handle_oauth_callback,
     load_creds,
-    get_google_profile_name,
+    get_google_profile_info,
     get_calendar_service
 )
 
