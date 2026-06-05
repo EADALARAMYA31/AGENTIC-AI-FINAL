@@ -45,18 +45,9 @@ from database import (
 # CONFIG
 # =========================
 st.set_page_config(page_title="AI Scheduler Pro MAX", page_icon="📅", layout="wide")
-st.write("QUERY PARAMS OBJECT")
-st.write(st.query_params)
 
-st.write("DICT PARAMS")
-st.write(dict(st.query_params))
 
-code = st.query_params.get("code")
 
-if code:
-    st.write("CODE =", code)
-else:
-    st.write("No OAuth code found")
 for key in ["app_stage", "user_id", "username", "google_connected", "auth_url", "oauth_done", "navigation"]:
     st.session_state.setdefault(key, None)
 
