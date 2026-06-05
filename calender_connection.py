@@ -102,14 +102,18 @@ def get_calendar_service():
 # =========================
 # 5. GOOGLE PROFILE NAME
 # =========================
-def get_google_profile_name(creds):
+def get_google_profile_info(creds):
     """
-    Fetch the Google account's display name using the OAuth2 API.
+    Fetch the Google account's profile info (name + email).
     """
     try:
         service = build("oauth2", "v2", credentials=creds)
         user_info = service.userinfo().get().execute()
-        return user_info.get("name", "Google Account")
+        return {
+            "name": user_info.get("name", "Google Account"),
+            "email": user_info.get("email", None)
+        }
     except Exception as e:
-        print("Error fetching Google profile name:", e)
-        return "Google Account"
+        print("Error fetching Google profile info:", e)
+        return {"name": "Google Account", "email": None}
+

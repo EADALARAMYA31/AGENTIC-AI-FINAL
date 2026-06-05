@@ -60,14 +60,15 @@ if code and not st.session_state.get("oauth_done", False):
     if creds:
         st.session_state["google_connected"] = True
 
-        # ✅ Use Google identity directly
-        google_name = get_google_profile_name(creds)
-        st.session_state["user_id"] = google_name   # or creds.id_token['email']
-        st.session_state["username"] = google_name
+        # ✅ Fetch Google profile info
+        profile = get_google_profile_info(creds)
+        st.session_state["user_id"] = profile["email"]   # use email as stable ID
+        st.session_state["username"] = profile["name"]
 
         st.session_state["app_stage"] = "dashboard"
         st.query_params.clear()
         st.rerun()
+
 
 
 # =========================
