@@ -131,7 +131,8 @@ def google_page():
 
     if not st.session_state.get("auth_url"):
         st.session_state["auth_url"] = get_calendar_auth_url()
-
+    st.write("AUTH URL:")
+    st.code(st.session_state["auth_url"])
     st.link_button("Continue with Google", st.session_state["auth_url"])
 
 # =========================
