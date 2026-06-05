@@ -70,7 +70,7 @@ if "oauth_done" not in st.session_state:
 if "navigation" not in st.session_state:
     st.session_state["navigation"] = None
 
-st.write("APP STAGE =", st.session_state["app_stage"])
+st.write("TOP DEBUG: app_stage =", st.session_state["app_stage"])
 st.write("FULL URL PARAMS:", dict(st.query_params))
 # =========================
 # OAUTH CALLBACK
