@@ -9,7 +9,14 @@ from googleapiclient.discovery import build
 # CONFIG
 # =========================
 SCOPES = ["https://www.googleapis.com/auth/calendar", "https://www.googleapis.com/auth/userinfo.profile", "https://www.googleapis.com/auth/userinfo.email", "openid"]
-CLIENT_SECRET_FILE = "client_secret.json"
+client_config = {
+    "web": {
+        "client_id": st.secrets["GOOGLE_CLIENT_ID"],
+        "client_secret": st.secrets["GOOGLE_CLIENT_SECRET"],
+        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+        "token_uri": "https://oauth2.googleapis.com/token"
+    }
+}
 REDIRECT_URI = "https://agentic-ai-final-fksab93mmxpc67sfmpmz6u.streamlit.app"
 
 # Allow insecure transport for local testing
@@ -21,7 +28,7 @@ os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 # =========================
 def get_calendar_auth_url():
     flow = Flow.from_client_secrets_file(
-        CLIENT_SECRET_FILE,
+        client_config,
         scopes=SCOPES,
         redirect_uri=REDIRECT_URI
     )
@@ -46,7 +53,7 @@ def get_calendar_auth_url():
 # =========================
 def handle_oauth_callback(auth_code, state=None):
     flow = Flow.from_client_secrets_file(
-        CLIENT_SECRET_FILE,
+        client_config,
         scopes=SCOPES,
         redirect_uri=REDIRECT_URI
     )
