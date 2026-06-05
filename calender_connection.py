@@ -10,7 +10,7 @@ from googleapiclient.discovery import build
 # =========================
 SCOPES = ["https://www.googleapis.com/auth/calendar", "https://www.googleapis.com/auth/userinfo.profile", "https://www.googleapis.com/auth/userinfo.email", "openid"]
 CLIENT_SECRET_FILE = "client_secret.json"
-REDIRECT_URI = "http://localhost:8501"
+REDIRECT_URI = "https://agentic-ai-final-fksab93mmxpc67sfmpmz6u.streamlit.app"
 
 # Allow insecure transport for local testing
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"

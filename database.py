@@ -6,18 +6,29 @@ from datetime import date
 import os
 #import psycopg2
 
+import streamlit as st
+
 def get_connection():
-    try:
-        return psycopg2.connect(
-            host="localhost",
-            database="smart_timetable",
-            user="postgres",
-            password="MYSQLramya31",   # Your PostgreSQL password
-            port="5432"
-        )
-    except Exception as e:
-        print("Database Connection Error:", e)
-        raise
+    return psycopg2.connect(
+        host=st.secrets["DB_HOST"],
+        database=st.secrets["DB_NAME"],
+        user=st.secrets["DB_USER"],
+        password=st.secrets["DB_PASSWORD"],
+        port=st.secrets["DB_PORT"],
+        sslmode="require"
+    )
+#def get_connection():
+    #try:
+     #   return psycopg2.connect(
+      #      host="localhost",
+       #     database="smart_timetable",
+        #    user="postgres",
+         #   password="MYSQLramya31",   # Your PostgreSQL password
+          #  port="5432"
+        #)
+    #except Exception as e:
+     #   print("Database Connection Error:", e)
+      #  raise
 
 
 # ================= PASSWORD HASHING =================
