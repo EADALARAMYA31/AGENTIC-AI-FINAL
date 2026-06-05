@@ -94,7 +94,7 @@ if code and not st.session_state.get("oauth_done", False):
         st.session_state["user_id"] = user[0]
         st.session_state["username"] = name
         st.session_state["app_stage"] = "dashboard"
-        st.session_state["google_connected"] = True
+
         # Debug
         st.write("DEBUG: app_stage =", st.session_state["app_stage"])
         st.write("DEBUG: user_id =", st.session_state["user_id"])
@@ -103,6 +103,7 @@ if code and not st.session_state.get("oauth_done", False):
         # Clear AFTER setting stage
         st.query_params.clear()
         st.rerun()
+
 
 
 
