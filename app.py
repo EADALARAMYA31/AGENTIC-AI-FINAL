@@ -417,7 +417,7 @@ def dashboard():
             </div>
             """, unsafe_allow_html=True)
 
-            st.balloons()
+            #st.balloons()
 
             # Force DB refresh before redirect
             _ = get_events(st.session_state["user_id"])
@@ -734,7 +734,7 @@ def dashboard():
             )
 
             st.success("✅ Assignment Added Successfully")
-            st.balloons()
+            #st.balloons()
 
             st.rerun()
 
