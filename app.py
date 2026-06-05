@@ -49,8 +49,11 @@ st.set_page_config(page_title="AI Scheduler Pro MAX", page_icon="📅", layout="
 
 if "redirect_dashboard" not in st.session_state:
     st.session_state["redirect_dashboard"] = False
-if "app_stage" not in st.session_state or st.session_state["app_stage"] is None:
+if "app_stage" not in st.session_state:
+    st.session_state["app_stage"] = None
+if st.session_state["app_stage"] is None:
     st.session_state["app_stage"] = "auth"
+
 
 
 if "user_id" not in st.session_state:
@@ -80,10 +83,7 @@ code = st.query_params.get("code")
 
 if code and not st.session_state.get("oauth_done", False):
     st.session_state["oauth_done"] = True
-
     creds = handle_oauth_callback(code)
-
-    st.query_params.clear()
 
     if creds:
         profile = get_google_profile_info(creds)
@@ -91,19 +91,17 @@ if code and not st.session_state.get("oauth_done", False):
         name = profile["name"]
 
         user = get_user_by_email(email)
-
         if not user:
             register_user(name, "google-oauth", email=email, provider="google")
             user = get_user_by_email(email)
 
-        if user:
-            st.session_state["user_id"] = user[0]
-            st.session_state["username"] = name
-            st.session_state["app_stage"] = "dashboard"
-            st.session_state["google_connected"] = True
+        st.session_state["user_id"] = user[0]
+        st.session_state["username"] = name
+        st.session_state["app_stage"] = "dashboard"
 
+        st.query_params.clear()
         st.rerun()
-        st.stop()
+
 
 
 
