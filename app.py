@@ -76,35 +76,30 @@ st.write("FULL URL PARAMS:", dict(st.query_params))
 # OAUTH CALLBACK
 # =========================
 code = st.query_params.get("code")
-
 if code and not st.session_state.get("oauth_done", False):
-
     st.session_state["oauth_done"] = True
-
     creds = handle_oauth_callback(code)
 
     if creds:
-
         profile = get_google_profile_info(creds)
         email = profile["email"]
         name = profile["name"]
 
         user = get_user_by_email(email)
-
         if not user:
             register_user(name, "google-oauth", email=email, provider="google")
             user = get_user_by_email(email)
 
         st.session_state["user_id"] = user[0]
         st.session_state["username"] = name
-
-        # 🔥 THIS IS THE KEY FIX
         st.session_state["app_stage"] = "dashboard"
 
+        # ✅ clear AFTER setting app_stage
         st.query_params.clear()
         st.rerun()
 
     st.stop()
+
 
 # =========================
 # AUTH PAGE
