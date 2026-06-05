@@ -76,6 +76,7 @@ st.write("FULL URL PARAMS:", dict(st.query_params))
 # OAUTH CALLBACK
 # =========================
 code = st.query_params.get("code")
+
 if code and not st.session_state.get("oauth_done", False):
     st.session_state["oauth_done"] = True
     creds = handle_oauth_callback(code)
@@ -92,13 +93,16 @@ if code and not st.session_state.get("oauth_done", False):
 
         st.session_state["user_id"] = user[0]
         st.session_state["username"] = name
+
+        # ✅ Set stage before clearing
         st.session_state["app_stage"] = "dashboard"
 
-        # ✅ clear AFTER setting app_stage
+        # ✅ Clear only after stage is set
         st.query_params.clear()
         st.rerun()
 
     st.stop()
+
 
 
 # =========================
