@@ -59,14 +59,18 @@ if code and not st.session_state.get("oauth_done", False):
     creds = handle_oauth_callback(code)
     if creds:
         st.session_state["google_connected"] = True
-        # ✅ Make sure user_id and username are set
+
+        # ✅ Ensure user_id and username are set
         if not st.session_state.get("user_id"):
-            st.session_state["user_id"] = get_google_profile_name(creds)  # or map to DB user
+            # Map Google profile to your DB user here
+            st.session_state["user_id"] = login_user(get_google_profile_name(creds), None)[0]
         if not st.session_state.get("username"):
             st.session_state["username"] = get_google_profile_name(creds)
+
         st.session_state["app_stage"] = "dashboard"
         st.query_params.clear()
         st.rerun()
+
 
 # =========================
 # DATA REFRESH FIX (IMPORTANT)
@@ -141,6 +145,10 @@ def google_page():
 # DASHBOARD
 # =========================
 def dashboard():
+    if not st.session_state.get("user_id"):
+        st.error("Session expired. Please login again.")
+        st.session_state["app_stage"] = "auth"
+        st.rerun()
     #st.write("DASHBOARD SESSION:")
     #st.write(dict(st.session_state))
     #st.write("SESSION USER ID =", st.session_state.get("user_id"))
