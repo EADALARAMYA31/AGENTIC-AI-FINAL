@@ -46,35 +46,52 @@ for key in ["app_stage", "user_id", "username", "google_connected", "auth_url", 
 
 if st.session_state.get("app_stage") is None:
     st.session_state["app_stage"] = "auth"
-
+if "app_stage" not in st.session_state:
+    st.session_state["app_stage"] = "auth"
 
 # =========================
 # OAUTH CALLBACK
 # =========================
 # 1. OAuth callback first
-code = st.query_params.get("code")
+def main_router():
+    # -----------------------
+    # 1. OAuth callback FIRST
+    # -----------------------
+    code = st.query_params.get("code")
 
-if code and not st.session_state.get("oauth_done", False):
-    st.session_state["oauth_done"] = True
+    if code and not st.session_state.get("oauth_done", False):
+        st.session_state["oauth_done"] = True
 
-    creds = handle_oauth_callback(code)
+        creds = handle_oauth_callback(code)
 
-    if creds:
-        st.session_state["google_connected"] = True
-        st.session_state["app_stage"] = "dashboard"
+        if creds:
+            st.session_state["google_connected"] = True
+            st.session_state["app_stage"] = "dashboard"
 
-        st.query_params = {}
-        st.rerun()
+            st.query_params = {}
+            st.rerun()
 
+    # -----------------------
+    # 2. ROUTING SYSTEM
+    # -----------------------
+    stage = st.session_state.get("app_stage", "auth")
 
-# 2. ROUTING (VERY IMPORTANT)
-if st.session_state.get("google_connected") and st.session_state.get("app_stage") == "dashboard":
-    show_dashboard()
-    st.stop()
+    if stage == "auth":
+        auth_page()
+        st.stop()
 
+    elif stage == "google":
+        google_page()
+        st.stop()
 
-# 3. LOGIN SCREEN
-show_login()
+    elif stage == "dashboard":
+        dashboard()
+        st.stop()
+
+    else:
+        auth_page()
+        st.stop()
+main_router()
 # =========================
 # DATA REFRESH FIX (IMPORTANT)
 # =========================
@@ -141,7 +158,7 @@ def google_page():
     #st.write("GOOGLE PAGE SESSION:")
     #st.write(dict(st.session_state))
 
-    if st.session_state.get("google_connected"):
+    if st.session_state.get("google_connected") and st.session_state.get("app_stage") != "dashboard":
         st.session_state["app_stage"] = "dashboard"
         st.rerun()
 
