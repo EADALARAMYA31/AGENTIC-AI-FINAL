@@ -61,13 +61,26 @@ if code and not st.session_state.get("oauth_done", False):
         st.session_state["google_connected"] = True
 
         # ✅ Fetch Google profile info
-        profile = get_google_profile_info(creds)
-        st.session_state["user_id"] = profile["email"]   # use email as stable ID
-        st.session_state["username"] = profile["name"]
+        service = build("oauth2", "v2", credentials=creds)
+        user_info = service.userinfo().get().execute()
+        email = user_info.get("email")
+        name = user_info.get("name", "Google Account")
+
+        # Check Neon DB
+        user = get_user_by_email(email)
+        if not user:
+            # Auto‑register if not found
+            register_user(email, "google-oauth")  # dummy password
+            user = get_user_by_email(email)
+
+        st.session_state["user_id"] = user[0]
+        st.session_state["username"] = name
 
         st.session_state["app_stage"] = "dashboard"
         st.query_params.clear()
         st.rerun()
+
+
 
 
 

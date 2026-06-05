@@ -372,3 +372,11 @@ def update_goal_progress(
     cur.close()
     conn.close()
 
+def get_user_by_email(email):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT id, username FROM users WHERE email=%s", (email,))
+    user = cur.fetchone()
+    cur.close()
+    conn.close()
+    return user
