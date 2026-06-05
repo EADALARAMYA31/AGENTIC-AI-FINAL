@@ -45,7 +45,7 @@ from database import (
 # CONFIG
 # =========================
 st.set_page_config(page_title="AI Scheduler Pro MAX", page_icon="📅", layout="wide")
-
+st.write("APP STAGE =", st.session_state.get("app_stage"))
 
 
 for key in ["app_stage", "user_id", "username", "google_connected", "auth_url", "oauth_done", "navigation"]:
