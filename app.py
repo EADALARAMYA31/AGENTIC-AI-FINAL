@@ -49,11 +49,8 @@ st.set_page_config(page_title="AI Scheduler Pro MAX", page_icon="📅", layout="
 
 if "redirect_dashboard" not in st.session_state:
     st.session_state["redirect_dashboard"] = False
-if "app_stage" not in st.session_state:
-    # Only set default once, not on every rerun
-    st.session_state.setdefault("app_stage", None)
-    if st.session_state["app_stage"] is None:
-        st.session_state["app_stage"] = "auth"
+if "app_stage" not in st.session_state or st.session_state["app_stage"] is None:
+    st.session_state["app_stage"] = "auth"
 
 
 if "user_id" not in st.session_state:
@@ -86,7 +83,6 @@ if code and not st.session_state.get("oauth_done", False):
 
     creds = handle_oauth_callback(code)
 
-    # ❌ CLEAR URL FIRST (IMPORTANT)
     st.query_params.clear()
 
     if creds:
@@ -107,7 +103,7 @@ if code and not st.session_state.get("oauth_done", False):
             st.session_state["google_connected"] = True
 
         st.rerun()
-
+        st.stop()
 
 
 
