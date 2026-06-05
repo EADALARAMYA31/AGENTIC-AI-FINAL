@@ -51,30 +51,30 @@ if st.session_state.get("app_stage") is None:
 # =========================
 # OAUTH CALLBACK
 # =========================
+# 1. OAuth callback first
 code = st.query_params.get("code")
 
 if code and not st.session_state.get("oauth_done", False):
-
     st.session_state["oauth_done"] = True
 
     creds = handle_oauth_callback(code)
 
     if creds:
-
-        if os.path.exists("user_session.pkl"):
-            with open("user_session.pkl", "rb") as f:
-                user_data = pickle.load(f)
-
-            st.session_state["user_id"] = user_data["user_id"]
-            st.session_state["username"] = user_data["username"]
-
         st.session_state["google_connected"] = True
         st.session_state["app_stage"] = "dashboard"
 
-        # SAFE cleanup
         st.query_params = {}
-
         st.rerun()
+
+
+# 2. ROUTING (VERY IMPORTANT)
+if st.session_state.get("google_connected") and st.session_state.get("app_stage") == "dashboard":
+    show_dashboard()
+    st.stop()
+
+
+# 3. LOGIN SCREEN
+show_login()
 # =========================
 # DATA REFRESH FIX (IMPORTANT)
 # =========================
