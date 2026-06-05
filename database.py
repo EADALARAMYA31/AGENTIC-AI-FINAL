@@ -39,30 +39,24 @@ def hash_password(password):
 
 # ================= USER FUNCTIONS =================
 
-def register_user(username, password):
-
+def register_user(username, password, email=None, provider="local"):
     conn = get_connection()
     cur = conn.cursor()
-
     try:
         hashed = hash_password(password)
-
         cur.execute("""
-            INSERT INTO users (username, password)
-            VALUES (%s, %s)
-        """, (username, hashed))
-
+            INSERT INTO users (username, password, email, provider)
+            VALUES (%s, %s, %s, %s)
+        """, (username, hashed, email, provider))
         conn.commit()
-
         return True
-
     except psycopg2.Error:
         conn.rollback()
         return False
-
     finally:
         cur.close()
         conn.close()
+
 
 
 def login_user(username, password):

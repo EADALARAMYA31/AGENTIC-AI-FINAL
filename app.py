@@ -65,27 +65,20 @@ st.write("FULL URL PARAMS:", dict(st.query_params))
 # OAUTH CALLBACK
 # =========================
 code = st.query_params.get("code")
-
-if code:
-    st.write("GOOGLE CODE RECEIVED")
-
+if code and not st.session_state.get("oauth_done", False):
+    st.session_state["oauth_done"] = True
     creds = handle_oauth_callback(code)
-
     if creds:
-
         st.session_state["google_connected"] = True
 
         profile = get_google_profile_info(creds)
-
         email = profile["email"]
         name = profile["name"]
 
-        st.write("EMAIL =", email)
-
         user = get_user_by_email(email)
-
         if not user:
-            register_user(email, "google-oauth")
+            # Register with Google provider
+            register_user(name, "google-oauth", email=email, provider="google")
             user = get_user_by_email(email)
 
         st.session_state["user_id"] = user[0]
@@ -93,9 +86,6 @@ if code:
         st.session_state["app_stage"] = "dashboard"
 
         st.query_params.clear()
-
-        st.success("Google Login Success")
-
         st.rerun()
 
 
