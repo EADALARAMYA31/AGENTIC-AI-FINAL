@@ -19,7 +19,7 @@ client_config = {
         "redirect_uris":[REDIRECT_URI]
     }
 }
-#REDIRECT_URI = "https://agentic-ai-final-fksab93mmxpc67sfmpmz6u.streamlit.app"
+
 
 # Allow insecure transport for local testing
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
@@ -34,6 +34,7 @@ def get_calendar_auth_url():
         scopes=SCOPES,
         redirect_uri=REDIRECT_URI
     )
+
     auth_url, state = flow.authorization_url(
         access_type="offline",
         prompt="consent",
@@ -41,39 +42,29 @@ def get_calendar_auth_url():
     )
 
     st.session_state["oauth_state"] = state
-    st.session_state["code_verifier"] = flow.code_verifier
-
-    # Persist verifier to file so it survives reruns
-    with open("verifier.txt", "w") as f:
-        f.write(flow.code_verifier)
-
     return auth_url
 
 
 # =========================
 # 2. HANDLE CALLBACK
 # =========================
-def handle_oauth_callback(auth_code, state=None):
+def handle_oauth_callback(auth_code):
     flow = Flow.from_client_config(
         client_config,
         scopes=SCOPES,
         redirect_uri=REDIRECT_URI
     )
 
-    # Restore verifier from session or file
-    verifier = st.session_state.get("code_verifier")
-    if not verifier and os.path.exists("verifier.txt"):
-        with open("verifier.txt") as f:
-            verifier = f.read()
-        st.session_state["code_verifier"] = verifier
+    # restore state (IMPORTANT for security)
+    state = st.session_state.get("oauth_state")
 
-    st.write("Verifier at callback:", verifier)
+    flow.fetch_token(
+        code=auth_code,
+        state=state
+    )
 
-    flow.code_verifier = verifier
-    flow.fetch_token(code=auth_code)
     creds = flow.credentials
 
-    # Save credentials
     with open("token.pkl", "wb") as f:
         pickle.dump(creds, f)
 

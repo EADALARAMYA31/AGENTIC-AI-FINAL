@@ -53,9 +53,9 @@ if st.session_state.get("app_stage") is None:
 # =========================
 code = st.query_params.get("code")
 
-if code:
-    #st.write("CALLBACK SESSION BEFORE:")
-    #st.write(dict(st.session_state))
+if code and not st.session_state.get("oauth_done", False):
+
+    st.session_state["oauth_done"] = True
 
     creds = handle_oauth_callback(code)
 
@@ -71,7 +71,9 @@ if code:
         st.session_state["google_connected"] = True
         st.session_state["app_stage"] = "dashboard"
 
-        st.query_params.clear()
+        # SAFE cleanup
+        st.query_params = {}
+
         st.rerun()
 # =========================
 # DATA REFRESH FIX (IMPORTANT)
