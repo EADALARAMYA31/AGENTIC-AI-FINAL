@@ -50,43 +50,36 @@ for key in ["app_stage", "user_id", "username", "google_connected", "auth_url", 
 
 if st.session_state.get("app_stage") is None:
     st.session_state["app_stage"] = "auth"
-
+st.write("FULL URL PARAMS:", dict(st.query_params))
 # =========================
 # OAUTH CALLBACK
 # =========================
 code = st.query_params.get("code")
-st.write("CODE =", code)
-st.write("APP_STAGE =", st.session_state.get("app_stage"))
-st.write("USER_ID =", st.session_state.get("user_id"))
-st.write("GOOGLE_CONNECTED =", st.session_state.get("google_connected"))
+
 if code and not st.session_state.get("oauth_done", False):
-    st.write("CALLBACK STARTED")
+    st.session_state["oauth_done"] = True
 
     creds = handle_oauth_callback(code)
 
-    st.write("CREDS =", creds)
-    st.session_state["oauth_done"] = True
-    #creds = handle_oauth_callback(code)
     if creds:
         st.session_state["google_connected"] = True
 
-        # ✅ Fetch Google profile info
         service = build("oauth2", "v2", credentials=creds)
         user_info = service.userinfo().get().execute()
+
         email = user_info.get("email")
         name = user_info.get("name", "Google Account")
 
-        # Check Neon DB
         user = get_user_by_email(email)
+
         if not user:
-            # Auto‑register if not found
-            register_user(email, "google-oauth")  # dummy password
+            register_user(email, "google-oauth")
             user = get_user_by_email(email)
 
         st.session_state["user_id"] = user[0]
         st.session_state["username"] = name
-
         st.session_state["app_stage"] = "dashboard"
+
         st.query_params.clear()
         st.rerun()
 
