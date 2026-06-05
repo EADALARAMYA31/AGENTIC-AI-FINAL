@@ -4003,14 +4003,11 @@ def dashboard():
 # =========================
 # ROUTER
 # =========================
-if st.session_state.get("app_stage") == "dashboard":
-    dashboard()
-    st.stop()
-
-elif st.session_state.get("app_stage") == "google":
-    google_page()
-    st.stop()
-
-elif st.session_state.get("app_stage") == "auth":
+if st.session_state["app_stage"] == "auth":
     auth_page()
-    st.stop()
+
+elif st.session_state["app_stage"] == "google":
+    google_page()
+
+elif st.session_state["app_stage"] == "dashboard":
+    dashboard()
