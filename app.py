@@ -47,7 +47,8 @@ from database import (
 st.set_page_config(page_title="AI Scheduler Pro MAX", page_icon="📅", layout="wide")
 
 
-
+if "redirect_dashboard" not in st.session_state:
+    st.session_state["redirect_dashboard"] = False
 if "app_stage" not in st.session_state:
     st.session_state["app_stage"] = "auth"
 
@@ -68,6 +69,7 @@ if "oauth_done" not in st.session_state:
 
 if "navigation" not in st.session_state:
     st.session_state["navigation"] = None
+
 st.write("APP STAGE =", st.session_state["app_stage"])
 st.write("FULL URL PARAMS:", dict(st.query_params))
 # =========================
@@ -82,6 +84,7 @@ if code and not st.session_state.get("oauth_done", False):
     creds = handle_oauth_callback(code)
 
     if creds:
+
         profile = get_google_profile_info(creds)
         email = profile["email"]
         name = profile["name"]
@@ -95,15 +98,13 @@ if code and not st.session_state.get("oauth_done", False):
         st.session_state["user_id"] = user[0]
         st.session_state["username"] = name
 
-        # 🔥 IMPORTANT FIX
+        # 🔥 THIS IS THE KEY FIX
         st.session_state["app_stage"] = "dashboard"
 
-        # clear URL
         st.query_params.clear()
-
         st.rerun()
 
-    st.stop()# 🔥 CRITICAL FIX
+    st.stop()
 
 # =========================
 # AUTH PAGE
