@@ -54,15 +54,17 @@ def handle_oauth_callback(code):
             redirect_uri=REDIRECT_URI
         )
 
+        st.write("FETCHING TOKEN...")
+
         flow.fetch_token(code=code)
 
-        creds = flow.credentials
+        st.success("TOKEN SUCCESS")
 
-        return creds
+        return flow.credentials
 
     except Exception as e:
-        st.error(f"OAUTH ERROR = {e}")
-        print("OAUTH ERROR =", e)
+        st.error("TOKEN FAILED")
+        st.error(str(e))
         return None
 
 # =========================
