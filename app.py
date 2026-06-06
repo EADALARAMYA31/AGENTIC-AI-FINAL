@@ -134,7 +134,8 @@ def google_page():
         st.session_state["auth_url"] = get_calendar_auth_url()
     #st.write("LOGIN VERIFIER =", st.session_state.get("code_verifier"))
     #st.write("SESSION ID TEST")
-    st.write(st.session_state)
+    #st.write(st.session_state)
+    st.write("👉 Continue with Google")
     st.link_button(
         "Continue with Google",
         st.session_state["auth_url"]
