@@ -71,35 +71,22 @@ def handle_login_callback():
     if not code:
         return
 
-    # IMPORTANT: prevent repeated execution
     if st.session_state.get("oauth_done"):
         return
 
     st.session_state["oauth_done"] = True
 
-    try:
-        creds = handle_oauth_callback(code)
-    except Exception as e:
-        st.error(f"OAuth failed: {e}")
+    creds = handle_oauth_callback(code)
+
+    if not creds:
         st.session_state["oauth_done"] = False
         return
 
     profile = get_google_profile_info(creds)
 
-    email = profile["email"]
-    name = profile["name"]
-
-    user = get_user_by_email(email)
-
-    if not user:
-        register_user(name, "google-oauth", email=email, provider="google")
-        user = get_user_by_email(email)
-
-    st.session_state.update({
-        "user_id": user[0],
-        "username": name,
-        "app_stage": "dashboard"
-    })
+    st.session_state["user_id"] = 1
+    st.session_state["username"] = profile["name"]
+    st.session_state["app_stage"] = "dashboard"
 
     st.query_params.clear()
     st.rerun()
@@ -4004,14 +3991,10 @@ def dashboard():
 
 handle_login_callback()
 
-app_stage = st.session_state.get("app_stage", "auth")
-
-if app_stage == "auth":
+if st.session_state["app_stage"] == "auth":
     auth_page()
-
-elif app_stage == "google":
+elif st.session_state["app_stage"] == "google":
     google_page()
-
-elif app_stage == "dashboard":
+elif st.session_state["app_stage"] == "dashboard":
     dashboard()
 

@@ -5,9 +5,6 @@ from google_auth_oauthlib.flow import Flow
 from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
 
-# =========================
-# CONFIG
-# =========================
 REDIRECT_URI = "https://agentic-ai-final.streamlit.app/"
 
 SCOPES = [
@@ -27,14 +24,9 @@ client_config = {
     }
 }
 
-# =========================
-# FLOW CREATION (ONLY ONCE)
-# =========================
-
-
-# =========================
-# LOGIN URL
-# =========================
+# =====================
+# STEP 1: LOGIN URL
+# =====================
 def get_calendar_auth_url():
     flow = Flow.from_client_config(
         client_config,
@@ -44,27 +36,24 @@ def get_calendar_auth_url():
 
     auth_url, state = flow.authorization_url(
         access_type="offline",
-        prompt="consent"
+        prompt="consent",
+        include_granted_scopes=True
     )
 
-    # 🔥 SAVE BOTH
     st.session_state["oauth_state"] = state
-    st.session_state["code_verifier"] = flow.code_verifier
+    st.session_state["oauth_flow"] = flow   # 🔥 IMPORTANT
 
     return auth_url
 
-# =========================
-# CALLBACK (FIXED)
-# =========================
-def handle_oauth_callback(code):
-    flow = Flow.from_client_config(
-        client_config,
-        scopes=SCOPES,
-        redirect_uri=REDIRECT_URI
-    )
 
-    # 🔥 RESTORE CODE VERIFIER (THIS FIXES YOUR ERROR)
-    flow.code_verifier = st.session_state.get("code_verifier")
+# =====================
+# STEP 2: CALLBACK FIX
+# =====================
+def handle_oauth_callback(code):
+    flow = st.session_state.get("oauth_flow")
+
+    if not flow:
+        raise Exception("OAuth flow lost. Restart login.")
 
     flow.fetch_token(code=code)
 
