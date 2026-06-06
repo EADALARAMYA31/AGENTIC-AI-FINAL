@@ -50,11 +50,13 @@ def get_calendar_auth_url():
 # STEP 2: CALLBACK FIX
 # =====================
 def handle_oauth_callback(code):
-    flow = st.session_state.get("oauth_flow")
+    flow = Flow.from_client_config(
+        client_config,
+        scopes=SCOPES,
+        redirect_uri=REDIRECT_URI
+    )
 
-    if not flow:
-        raise Exception("OAuth flow lost. Restart login.")
-
+    # IMPORTANT: recreate SAME flow
     flow.fetch_token(code=code)
 
     creds = flow.credentials

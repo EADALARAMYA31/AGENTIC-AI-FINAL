@@ -65,22 +65,10 @@ for key, value in defaults.items():
         st.session_state[key] = value
 # =========================
 # OAUTH CALLBACK
-def handle_login_callback():
-    code = st.query_params.get("code")
+code = st.query_params.get("code")
 
-    if not code:
-        return
-
-    if st.session_state.get("oauth_done"):
-        return
-
-    st.session_state["oauth_done"] = True
-
+if code:
     creds = handle_oauth_callback(code)
-
-    if not creds:
-        st.session_state["oauth_done"] = False
-        return
 
     profile = get_google_profile_info(creds)
 
@@ -3989,7 +3977,6 @@ def dashboard():
                 st.rerun()
 
 
-handle_login_callback()
 
 if st.session_state["app_stage"] == "auth":
     auth_page()
@@ -3997,4 +3984,3 @@ elif st.session_state["app_stage"] == "google":
     google_page()
 elif st.session_state["app_stage"] == "dashboard":
     dashboard()
-
