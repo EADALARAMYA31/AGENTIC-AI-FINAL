@@ -66,8 +66,6 @@ for key, value in defaults.items():
 # =========================
 # OAUTH CALLBACK
 def handle_login_callback():
-
-    # ✅ prevent duplicate execution
     if st.session_state.get("oauth_handled"):
         return
 
@@ -88,12 +86,9 @@ def handle_login_callback():
     st.session_state["username"] = profile["name"]
     st.session_state["app_stage"] = "dashboard"
 
-    # ✅ mark handled
     st.session_state["oauth_handled"] = True
 
-    # cleanup URL
     st.query_params.clear()
-
     st.rerun()
 # =========================
 # AUTH PAGE
