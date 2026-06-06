@@ -54,14 +54,11 @@ def handle_oauth_callback(code):
         scopes=SCOPES,
         redirect_uri=REDIRECT_URI
     )
-
+    flow.code_verifier = st.session_state.get("code_verifier")
     st.write(
         "CALLBACK VERIFIER =",
         st.session_state.get("code_verifier")
     )
-
-    flow.code_verifier = st.session_state.get("code_verifier")
-
     flow.fetch_token(code=code)
 
     return flow.credentials
