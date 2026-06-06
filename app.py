@@ -53,15 +53,16 @@ st.set_page_config(
 # =========================
 # SESSION STATE INIT
 # =========================
-if "app_stage" not in st.session_state:
-    st.session_state["app_stage"] = "auth"
-if "oauth_done" not in st.session_state:
-    st.session_state["oauth_done"] = False
-if "user_id" not in st.session_state:
-    st.session_state["user_id"] = None
+defaults = {
+    "app_stage": "auth",
+    "oauth_done": False,
+    "user_id": None,
+    "username": None
+}
 
-if "username" not in st.session_state:
-    st.session_state["username"] = None
+for key, value in defaults.items():
+    if key not in st.session_state:
+        st.session_state[key] = value
 # =========================
 # OAUTH CALLBACK
 # =========================

@@ -20,11 +20,6 @@ client_config = {
     }
 }
 
-
-# Allow insecure transport for local testing
-os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
-
-
 # =========================
 # 1. GENERATE GOOGLE LOGIN URL
 # =========================
@@ -49,31 +44,20 @@ def get_calendar_auth_url():
 # =========================
 # 2. HANDLE CALLBACK
 # =========================
-def handle_oauth_callback(auth_code):
-    try:
-        flow = Flow.from_client_config(
-            client_config,
-            scopes=SCOPES,
-            redirect_uri=REDIRECT_URI
-        )
+def handle_oauth_callback(code):
+    flow = Flow.from_client_config(
+        client_config,
+        scopes=SCOPES,
+        redirect_uri=REDIRECT_URI
+    )
 
-        # IMPORTANT: force fresh flow every time
-        flow.redirect_uri = REDIRECT_URI
+    flow.fetch_token(code=code)
+    creds = flow.credentials
 
-        flow.fetch_token(
-            code=auth_code
-        )
+    with open("token.pkl", "wb") as f:
+        pickle.dump(creds, f)
 
-        creds = flow.credentials
-
-        with open("token.pkl", "wb") as f:
-            pickle.dump(creds, f)
-
-        return creds
-
-    except Exception as e:
-        print("OAUTH ERROR:", e)
-        return None
+    return creds
 
 # =========================
 # 3. LOAD SAVED CREDENTIALS
@@ -107,17 +91,6 @@ def get_calendar_service():
 # 5. GOOGLE PROFILE NAME
 # =========================
 def get_google_profile_info(creds):
-    """
-    Fetch the Google account's profile info (name + email).
-    """
-    try:
-        service = build("oauth2", "v2", credentials=creds)
-        user_info = service.userinfo().get().execute()
-        return {
-            "name": user_info.get("name", "Google Account"),
-            "email": user_info.get("email", None)
-        }
-    except Exception as e:
-        print("Error fetching Google profile info:", e)
-        return {"name": "Google Account", "email": None}
+    service = build("oauth2", "v2", credentials=creds)
+    return service.userinfo().get().execute()
 
