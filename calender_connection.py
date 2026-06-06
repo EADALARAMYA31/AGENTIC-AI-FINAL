@@ -49,15 +49,15 @@ def get_calendar_auth_url():
 # =========================
 # 2. HANDLE CALLBACK
 # =========================
-def handle_oauth_callback(auth_code):
+def handle_oauth_callback(auth_code, state=None):
+
     try:
         flow = Flow.from_client_config(
             client_config,
             scopes=SCOPES,
-            redirect_uri=REDIRECT_URI
+            redirect_uri=REDIRECT_URI,
+            state=state
         )
-
-        # ❌ DO NOT set code_verifier manually
 
         flow.fetch_token(code=auth_code)
 
@@ -69,7 +69,7 @@ def handle_oauth_callback(auth_code):
         return creds
 
     except Exception as e:
-        print("OAUTH ERROR:", e)
+        st.error(f"OAuth Error: {e}")
         return None
 
 # =========================

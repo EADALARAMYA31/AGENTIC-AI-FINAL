@@ -57,6 +57,11 @@ if "app_stage" not in st.session_state:
     st.session_state["app_stage"] = "auth"
 if "oauth_done" not in st.session_state:
     st.session_state["oauth_done"] = False
+if "user_id" not in st.session_state:
+    st.session_state["user_id"] = None
+
+if "username" not in st.session_state:
+    st.session_state["username"] = None
 # =========================
 # OAUTH CALLBACK
 # =========================
@@ -4012,16 +4017,13 @@ def dashboard():
 # =========================
 # ROUTING
 # =========================
-stage = st.session_state.get("app_stage", "auth")
+if st.session_state["app_stage"] == "auth":
+    auth_page()
 
-if stage == "auth":
-    auth_page()
-elif stage == "google":
+elif st.session_state["app_stage"] == "google":
     google_page()
-elif stage == "dashboard":
-    dashboard()
-else:
-    # fallback
-    st.session_state["app_stage"] = "auth"
-    auth_page()
+
+elif st.session_state["app_stage"] == "dashboard":
+    st.title("🚀 DASHBOARD")
+    st.success(f"Welcome {st.session_state['username']}")
 
