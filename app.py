@@ -83,7 +83,7 @@ def handle_login_callback():
     profile = get_google_profile_info(creds)
 
     st.session_state["user_id"] = 1
-    st.session_state["username"] = profile["name"]
+    st.session_state["username"] = profile.get("name","User")
     st.session_state["app_stage"] = "dashboard"
     st.session_state["google_connected"] = True
     st.session_state["oauth_handled"] = True

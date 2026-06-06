@@ -46,50 +46,45 @@ def get_calendar_auth_url():
 # =====================
 # STEP 2: CALLBACK
 # =====================
-import requests
-
 def handle_oauth_callback(code):
+    flow = Flow.from_client_config(
+        client_config,
+        scopes=SCOPES,
+        redirect_uri=REDIRECT_URI
+    )
+
+    # IMPORTANT: load verifier safely
+    verifier = st.session_state.get("code_verifier")
+
+    if not verifier:
+        raise Exception("Code verifier missing (Streamlit session reset issue)")
+
+    flow.code_verifier = verifier
+
     try:
-        data = {
-            "code": code,
-            "client_id": client_config["web"]["client_id"],
-            "client_secret": client_config["web"]["client_secret"],
-            "redirect_uri": REDIRECT_URI,
-            "grant_type": "authorization_code"
-        }
-
-        token_url = "https://oauth2.googleapis.com/token"
-        r = requests.post(token_url, data=data)
-        token_data = r.json()
-
-        if "access_token" not in token_data:
-            st.error(token_data)
-            return None
-
-        from google.oauth2.credentials import Credentials
-
-        creds = Credentials(
-            token=token_data["access_token"],
-            refresh_token=token_data.get("refresh_token"),
-            token_uri=token_url,
-            client_id=client_config["web"]["client_id"],
-            client_secret=client_config["web"]["client_secret"],
-        )
-        token_file = f"token_{user_id}.pkl"
-        with open(token_file, "wb") as f:
-            pickle.dump(creds, f)
-
-        return creds
-
+        flow.fetch_token(code=code)
     except Exception as e:
-        st.error(f"OAuth Error: {e}")
+        print("TOKEN ERROR:", e)
         return None
+
+    creds = flow.credentials
+
+    # SAVE PER USER (IMPORTANT FIX)
+    user_id = st.session_state.get("user_id", "default")
+    token_file = f"token_{user_id}.pkl"
+
+    with open(token_file, "wb") as f:
+        pickle.dump(creds, f)
+
+    return creds
 # =========================
 # LOAD CREDENTIALS
 # =========================
-def load_creds(user_id):
-    creds = None
+def load_creds():
+    user_id = st.session_state.get("user_id", "default")
     token_file = f"token_{user_id}.pkl"
+
+    creds = None
 
     if os.path.exists(token_file):
         with open(token_file, "rb") as token:
