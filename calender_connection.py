@@ -47,14 +47,14 @@ def get_calendar_auth_url():
 # 2. HANDLE CALLBACK
 # =========================
 def handle_oauth_callback(code):
-    flow = get_flow()
-
-    # IMPORTANT: DO NOT modify flow after creation
-
-    flow.fetch_token(
-        code=code,
-        include_client_id=True
+    flow = Flow.from_client_config(
+        client_config,
+        scopes=SCOPES,
+        redirect_uri=REDIRECT_URI
     )
+
+    # IMPORTANT: ONLY THIS
+    flow.fetch_token(code=code)
 
     creds = flow.credentials
 

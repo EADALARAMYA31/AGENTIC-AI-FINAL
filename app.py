@@ -76,9 +76,10 @@ def handle_login_callback():
 
     st.session_state["oauth_done"] = True
 
-    creds = handle_oauth_callback(code)
-
-    if not creds:
+    try:
+        creds = handle_oauth_callback(code)
+    except Exception as e:
+        st.error("OAuth failed: " + str(e))
         st.session_state["oauth_done"] = False
         return
 
@@ -92,9 +93,7 @@ def handle_login_callback():
     if not user:
         register_user(name, "google-oauth", email=email, provider="google")
         user = get_user_by_email(email)
-    if not user:
-        st.error("Google login failed: user not created")
-        return
+
     st.session_state.update({
         "user_id": user[0],
         "username": name,
