@@ -83,6 +83,7 @@ code = st.query_params.get("code")
 
 if code and not st.session_state.get("oauth_done", False):
     st.session_state["oauth_done"] = True
+
     creds = handle_oauth_callback(code)
 
     if creds:
@@ -97,9 +98,14 @@ if code and not st.session_state.get("oauth_done", False):
 
         st.session_state["user_id"] = user[0]
         st.session_state["username"] = name
-        st.session_state["app_stage"] = "dashboard"
 
+        # 🔥 IMPORTANT: FORCE dashboard stage
+        st.session_state["app_stage"] = "dashboard"
+        st.session_state["google_connected"] = True
+
+        # 🔥 cleanup AFTER setting state
         st.query_params.clear()
+
         st.rerun()
 
 
@@ -164,9 +170,6 @@ def google_page():
 # =========================
 def dashboard():
     # Clear query params once we’re safely in dashboard
-    if "code" in st.query_params:
-        st.query_params.clear()
-
     if not st.session_state.get("user_id"):
         st.error("Session expired. Please login again.")
         st.session_state["app_stage"] = "auth"
@@ -4001,11 +4004,15 @@ def dashboard():
 # =========================
 # ROUTER
 # =========================
-if st.session_state["app_stage"] == "auth":
+if st.session_state.get("app_stage") == "auth":
     auth_page()
 
-elif st.session_state["app_stage"] == "google":
+elif st.session_state.get("app_stage") == "google":
     google_page()
 
-elif st.session_state["app_stage"] == "dashboard":
+elif st.session_state.get("app_stage") == "dashboard":
     dashboard()
+
+else:
+    st.session_state["app_stage"] = "auth"
+    st.rerun()
