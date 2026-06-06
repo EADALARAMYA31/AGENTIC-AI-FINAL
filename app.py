@@ -128,12 +128,14 @@ def auth_page():
 # GOOGLE PAGE
 # =========================
 def google_page():
-    auth_url = get_calendar_auth_url()
 
-    st.write("LOGIN VERIFIER =", st.session_state.get("code_verifier"))
-    st.write("STATE =", st.session_state.get("oauth_state"))
+    if "auth_url" not in st.session_state:
+        st.session_state["auth_url"] = get_calendar_auth_url()
 
-    st.link_button("Continue with Google", auth_url)
+    st.link_button(
+        "Continue with Google",
+        st.session_state["auth_url"]
+    )
 
 
 # =========================
