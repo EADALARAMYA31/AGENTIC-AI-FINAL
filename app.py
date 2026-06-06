@@ -74,7 +74,7 @@ def handle_login_callback():
     if not code:
         return
 
-    creds = handle_oauth_callback(code, st.session_state["user_id"])
+    creds = handle_oauth_callback(code)
 
     if not creds:
         st.error("OAuth failed")
@@ -83,7 +83,7 @@ def handle_login_callback():
     profile = get_google_profile_info(creds)
 
     st.session_state["user_id"] = 1
-    st.session_state["username"] = profile.get("name","User")
+    st.session_state["username"] = profile["name"]
     st.session_state["app_stage"] = "dashboard"
     st.session_state["google_connected"] = True
     st.session_state["oauth_handled"] = True
@@ -3960,34 +3960,34 @@ def dashboard():
     elif page == "🚪 Logout":
 
         st.title("🚪 Logout")
+
         st.warning("Are you sure you want to logout?")
 
-        if "confirm_logout" not in st.session_state:
-            st.session_state["confirm_logout"] = False
+        col1, col2 = st.columns(2)
 
-        if not st.session_state["confirm_logout"]:
+        with col1:
+            if st.button("✅ Yes, Logout", use_container_width=True):
 
-            col1, col2 = st.columns(2)
+            # remove saved token (Google login etc.)
+                if os.path.exists("token.pkl"):
+                    os.remove("token.pkl")
 
-            with col1:
-                if st.button("✅ Yes, Logout", use_container_width=True):
-                    st.session_state["confirm_logout"] = True
+                if os.path.exists("verifier.txt"):
+                    os.remove("verifier.txt")
 
-            with col2:
-                if st.button("❌ Cancel", use_container_width=True):
-                    st.rerun()
+            # clear session completely
+                for key in list(st.session_state.keys()):
+                    del st.session_state[key]
 
-        else:
-            if os.path.exists("token.pkl"):
-                os.remove("token.pkl")
+            # reset app stage
+                st.session_state["app_stage"] = "auth"
 
-            for key in list(st.session_state.keys()):
-                del st.session_state[key]
+                st.success("Logged out successfully")
+                st.rerun()
 
-            st.session_state["app_stage"] = "auth"
-
-            st.success("Logged out successfully")
-            st.rerun()
+        with col2:
+            if st.button("❌ Cancel", use_container_width=True):
+                st.rerun()
 
 
 
