@@ -65,24 +65,25 @@ for key, value in defaults.items():
         st.session_state[key] = value
 # =========================
 # OAUTH CALLBACK
-code = st.query_params.get("code")
+def handle_login_callback():
+    code = st.query_params.get("code")
 
-# IMPORTANT: prevent double execution
-if code and not st.session_state.get("oauth_done"):
+    if isinstance(code, list):
+        code = code[0]
+
+    if not code or st.session_state.get("oauth_done"):
+        return
 
     st.session_state["oauth_done"] = True
 
     creds = handle_oauth_callback(code)
 
     if creds:
-
         profile = get_google_profile_info(creds)
 
-        st.session_state.update({
-            "user_id": 1,
-            "username": profile["name"],
-            "app_stage": "dashboard"
-        })
+        st.session_state["user_id"] = 1
+        st.session_state["username"] = profile["name"]
+        st.session_state["app_stage"] = "dashboard"
 
         st.query_params.clear()
         st.rerun()
@@ -3986,9 +3987,16 @@ def dashboard():
 
 
 
-if st.session_state["app_stage"] == "auth":
+# 🚨 MUST BE CALLED HERE (NOT INSIDE ANY PAGE)
+handle_login_callback()
+
+app_stage = st.session_state.get("app_stage", "auth")
+
+if app_stage == "auth":
     auth_page()
-elif st.session_state["app_stage"] == "google":
+
+elif app_stage == "google":
     google_page()
-elif st.session_state["app_stage"] == "dashboard":
+
+elif app_stage == "dashboard":
     dashboard()
