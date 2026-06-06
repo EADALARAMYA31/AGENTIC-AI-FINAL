@@ -79,22 +79,27 @@ def handle_login_callback():
 
     st.session_state["oauth_done"] = True
 
-    creds = handle_oauth_callback(code)
+    try:
+        creds = handle_oauth_callback(code)
 
-    if not creds:
+        if not creds:
+            st.session_state["oauth_done"] = False
+            return
+
+        profile = get_google_profile_info(creds)
+
+        st.session_state.update({
+            "user_id": 1,
+            "username": profile["name"],
+            "app_stage": "dashboard"
+        })
+
+        st.query_params.clear()
+        st.rerun()
+
+    except Exception as e:
         st.session_state["oauth_done"] = False
-        return
-
-    profile = get_google_profile_info(creds)
-
-    st.session_state.update({
-        "user_id": 1,
-        "username": profile["name"],
-        "app_stage": "dashboard"
-    })
-
-    st.query_params.clear()
-    st.rerun()
+        st.error(f"OAuth failed: {str(e)}")
 # =========================
 # AUTH PAGE
 # =========================
@@ -134,13 +139,11 @@ def auth_page():
 # GOOGLE PAGE
 # =========================
 def google_page():
-    handle_login_callback()   # 🔥 ADD THIS LINE
+    st.title("Google Connect")
 
     if not st.session_state.get("user_id"):
         st.session_state["app_stage"] = "auth"
         st.rerun()
-
-    st.title("Google Connect")
 
     auth_url = get_calendar_auth_url()
     st.link_button("Continue with Google", auth_url)
