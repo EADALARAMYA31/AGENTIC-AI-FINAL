@@ -75,8 +75,8 @@ def handle_oauth_callback(code):
             client_id=client_config["web"]["client_id"],
             client_secret=client_config["web"]["client_secret"],
         )
-
-        with open("token.pkl", "wb") as f:
+        token_file = f"token_{user_id}.pkl"
+        with open(token_file, "wb") as f:
             pickle.dump(creds, f)
 
         return creds
@@ -87,25 +87,26 @@ def handle_oauth_callback(code):
 # =========================
 # LOAD CREDENTIALS
 # =========================
-def load_creds():
-    if os.path.exists("token.pkl"):
-        with open("token.pkl", "rb") as f:
-            creds = pickle.load(f)
+def load_creds(user_id):
+    creds = None
+    token_file = f"token_{user_id}.pkl"
 
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-            with open("token.pkl", "wb") as f:
-                pickle.dump(creds, f)
+    if os.path.exists(token_file):
+        with open(token_file, "rb") as token:
+            creds = pickle.load(token)
 
-        return creds
+    if creds and creds.expired and creds.refresh_token:
+        creds.refresh(Request())
+        with open(token_file, "wb") as token:
+            pickle.dump(creds, token)
 
-    return None
+    return creds
 
 # =========================
 # GOOGLE CALENDAR SERVICE
 # =========================
-def get_calendar_service():
-    creds = load_creds()
+def get_calendar_service(user_id):
+    creds = load_creds(user_id)
     if not creds:
         return None
     return build("calendar", "v3", credentials=creds)
