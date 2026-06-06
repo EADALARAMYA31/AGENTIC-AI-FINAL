@@ -43,7 +43,7 @@ def get_calendar_auth_url():
     # Save verifier globally
     with open("oauth_verifier.txt", "w") as f:
         f.write(flow.code_verifier)
-    #st.session_state["code_verifier"] = flow.code_verifier
+    st.session_state["code_verifier"] = flow.code_verifier
 
     st.write("SAVED VERIFIER =", flow.code_verifier)
     st.write("WRITING VERIFIER =", flow.code_verifier)
@@ -55,27 +55,26 @@ def get_calendar_auth_url():
 # =====================
 def handle_oauth_callback(code):
     try:
+        with open("oauth_verifier.txt", "r") as f:
+            verifier = f.read()
+
         flow = Flow.from_client_config(
             client_config,
             scopes=SCOPES,
             redirect_uri=REDIRECT_URI
         )
 
-        # ❌ DO NOT SET code_verifier manually
+        flow.code_verifier = verifier
 
         flow.fetch_token(code=code)
-
-        creds = flow.credentials
-
-        # SAVE TOKEN (VERY IMPORTANT FOR CALENDAR)
-        with open("token.pkl", "wb") as token:
-            pickle.dump(creds, token)
-
-        return creds
+        st.success("TOKEN SUCCESS")
+        return flow.credentials
 
     except Exception as e:
-        st.error(f"OAuth Error: {e}")
-        return None
+        st.error(repr(e))
+        import traceback
+        st.code(traceback.format_exc())
+    return None
 # =========================
 # LOAD CREDENTIALS
 # =========================
@@ -98,14 +97,9 @@ def load_creds():
 # =========================
 def get_calendar_service():
     creds = load_creds()
-
-    st.write("DEBUG CREDS IN SERVICE =", creds)
-
     if not creds:
         return None
-
-    service = build("calendar", "v3", credentials=creds)
-    return service
+    return build("calendar", "v3", credentials=creds)
 
 # =========================
 # PROFILE INFO
