@@ -83,7 +83,7 @@ def handle_login_callback():
         return
 
     profile = get_google_profile_info(creds)
-
+    st.write("STATE CALLBACK =", st.query_params.get("state"))
     st.write("DEBUG profile =", profile)
 
     st.session_state["app_stage"] = "dashboard"

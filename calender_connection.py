@@ -38,7 +38,7 @@ def get_calendar_auth_url():
         access_type="offline",
         prompt="consent"
     )
-
+    st.write("STATE SAVED =", st.session_state.get("oauth_state"))
     st.session_state["oauth_state"] = state
     return auth_url
 
@@ -47,25 +47,13 @@ def get_calendar_auth_url():
 # STEP 2: CALLBACK FIX
 # =====================
 def handle_oauth_callback(code):
-    try:
-        flow = Flow.from_client_config(
-            client_config,
-            scopes=SCOPES,
-            redirect_uri=REDIRECT_URI
-        )
+    flow = Flow.from_client_config(
+        client_config,
+        scopes=SCOPES,
+        redirect_uri=REDIRECT_URI
+    )
 
-        st.write("FETCHING TOKEN...")
-
-        flow.fetch_token(code=code)
-
-        st.success("TOKEN SUCCESS")
-
-        return flow.credentials
-
-    except Exception as e:
-        st.error("TOKEN FAILED")
-        st.error(str(e))
-        return None
+    flow.fetch_token(code=code)
 
 # =========================
 # LOAD CREDENTIALS
