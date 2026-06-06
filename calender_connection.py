@@ -43,6 +43,9 @@ def get_calendar_auth_url():
     # Save verifier globally
     with open("oauth_verifier.txt", "w") as f:
         f.write(flow.code_verifier)
+    st.session_state["code_verifier"] = flow.code_verifier
+
+    st.write("SAVED VERIFIER =", flow.code_verifier)
     st.write("WRITING VERIFIER =", flow.code_verifier)
     return auth_url
 
