@@ -55,50 +55,47 @@ st.set_page_config(
 # =========================
 if "app_stage" not in st.session_state:
     st.session_state["app_stage"] = "auth"
-
-
-if "oauth_processed" not in st.session_state:
-    st.session_state["oauth_processed"] = False
-
-if "user_id" not in st.session_state:
-    st.session_state["user_id"] = None
-
-if "username" not in st.session_state:
-    st.session_state["username"] = None
+if "oauth_done" not in st.session_state:
+    st.session_state["oauth_done"] = False
 # =========================
 # OAUTH CALLBACK
 # =========================
 def handle_login_callback():
+    if st.session_state.get("oauth_done"):
+        return
+
     code = st.query_params.get("code")
 
     if not code:
         return
 
-    if st.session_state.get("oauth_processed"):
-        return
-
-    st.session_state["oauth_processed"] = True
+    st.session_state["oauth_done"] = True
 
     creds = handle_oauth_callback(code)
 
-    if creds:
-        profile = get_google_profile_info(creds)
+    if not creds:
+        st.session_state["oauth_done"] = False
+        return
 
-        email = profile["email"]
-        name = profile["name"]
+    profile = get_google_profile_info(creds)
 
+    email = profile["email"]
+    name = profile["name"]
+
+    user = get_user_by_email(email)
+
+    if not user:
+        register_user(name, "google-oauth", email=email, provider="google")
         user = get_user_by_email(email)
-        if not user:
-            register_user(name, "google-oauth", email=email, provider="google")
-            user = get_user_by_email(email)
 
-        # 🔥 FORCE STATE FIRST
-        st.session_state["user_id"] = user[0]
-        st.session_state["username"] = name
-        st.session_state["app_stage"] = "dashboard"
-        st.session_state["oauth_processed"] = True
-        st.query_params.clear()
-        st.rerun()
+    st.session_state.update({
+        "user_id": user[0],
+        "username": name,
+        "app_stage": "dashboard"
+    })
+
+    st.query_params.clear()
+    st.rerun()
 
 
 handle_login_callback()
@@ -148,18 +145,17 @@ def auth_page():
 def google_page():
     st.title("🔗 Google Calendar Connect")
 
-    # Only redirect if we truly have no user AND not already in dashboard
-    if not st.session_state.get("user_id") and st.session_state.get("app_stage") != "dashboard":
+    if not st.session_state.get("user_id"):
         st.warning("Please login first")
         st.session_state["app_stage"] = "auth"
-        return  # no rerun here, let routing handle it
+        return
 
     st.write("Welcome:", st.session_state.get("username"))
 
-    if "auth_url" not in st.session_state:
-        st.session_state["auth_url"] = get_calendar_auth_url()
+    # ❌ DO NOT cache auth_url
+    auth_url = get_calendar_auth_url()
 
-    st.link_button("Continue with Google", st.session_state["auth_url"])
+    st.link_button("Continue with Google", auth_url)
 
 
 # =========================
