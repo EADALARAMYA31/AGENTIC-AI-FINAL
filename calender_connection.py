@@ -58,7 +58,8 @@ def handle_oauth_callback(code):
         return flow.credentials
 
     except Exception as e:
-        print("OAuth error:", e)
+        st.error(f"OAuth ERROR: {e}")
+        print("OAuth ERROR:", e)
         return None
 
 # =========================
