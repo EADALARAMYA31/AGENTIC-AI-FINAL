@@ -30,7 +30,8 @@ def get_calendar_auth_url():
     flow = Flow.from_client_config(
         client_config,
         scopes=SCOPES,
-        redirect_uri=REDIRECT_URI
+        redirect_uri=REDIRECT_URI,
+        autogenerate_code_verifier=True
     )
 
     auth_url, state = flow.authorization_url(
@@ -38,15 +39,9 @@ def get_calendar_auth_url():
         prompt="consent"
     )
 
-    #st.session_state["oauth_state"] = state
-
-    # Save verifier globally
-    with open("oauth_verifier.txt", "w") as f:
-        f.write(flow.code_verifier)
+    st.session_state["oauth_state"] = state
     st.session_state["code_verifier"] = flow.code_verifier
 
-    st.write("SAVED VERIFIER =", flow.code_verifier)
-    st.write("WRITING VERIFIER =", flow.code_verifier)
     return auth_url
 
 
@@ -55,26 +50,34 @@ def get_calendar_auth_url():
 # =====================
 def handle_oauth_callback(code):
     try:
-        with open("oauth_verifier.txt", "r") as f:
-            verifier = f.read()
+        verifier = st.session_state.get("code_verifier")
+
+        st.write("VERIFIER =", verifier)
 
         flow = Flow.from_client_config(
             client_config,
             scopes=SCOPES,
-            redirect_uri=REDIRECT_URI
+            redirect_uri=REDIRECT_URI,
+            autogenerate_code_verifier=False
         )
 
         flow.code_verifier = verifier
 
-        flow.fetch_token(code=code)
-        st.success("TOKEN SUCCESS")
-        return flow.credentials
+        flow.fetch_token(
+            code=code,
+            code_verifier=verifier
+        )
+
+        creds = flow.credentials
+
+        with open("token.pkl", "wb") as token:
+            pickle.dump(creds, token)
+
+        return creds
 
     except Exception as e:
-        st.error(repr(e))
-        import traceback
-        st.code(traceback.format_exc())
-    return None
+        st.error(e)
+        return None
 # =========================
 # LOAD CREDENTIALS
 # =========================
