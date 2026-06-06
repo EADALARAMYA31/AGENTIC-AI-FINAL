@@ -88,16 +88,20 @@ def handle_login_callback():
         name = profile["name"]
 
         user = get_user_by_email(email)
-
         if not user:
             register_user(name, "google-oauth", email=email, provider="google")
             user = get_user_by_email(email)
 
-        st.session_state["user_id"] = user[0]
-        st.session_state["username"] = name
-        st.session_state["app_stage"] = "dashboard"
+        # 🔥 FORCE STATE FIRST
+        st.session_state.update({
+            "user_id": user[0],
+            "username": name,
+            "app_stage": "dashboard"
+        })
 
         st.query_params.clear()
+
+        # small delay safety (IMPORTANT)
         st.rerun()
 
 handle_login_callback()
