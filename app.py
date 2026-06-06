@@ -67,17 +67,25 @@ for key, value in defaults.items():
 # OAUTH CALLBACK
 code = st.query_params.get("code")
 
-if code:
+# IMPORTANT: prevent double execution
+if code and not st.session_state.get("oauth_done"):
+
+    st.session_state["oauth_done"] = True
+
     creds = handle_oauth_callback(code)
 
-    profile = get_google_profile_info(creds)
+    if creds:
 
-    st.session_state["user_id"] = 1
-    st.session_state["username"] = profile["name"]
-    st.session_state["app_stage"] = "dashboard"
+        profile = get_google_profile_info(creds)
 
-    st.query_params.clear()
-    st.rerun()
+        st.session_state.update({
+            "user_id": 1,
+            "username": profile["name"],
+            "app_stage": "dashboard"
+        })
+
+        st.query_params.clear()
+        st.rerun()
 # =========================
 # AUTH PAGE
 # =========================

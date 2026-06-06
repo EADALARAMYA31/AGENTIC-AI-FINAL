@@ -50,21 +50,26 @@ def get_calendar_auth_url():
 # STEP 2: CALLBACK FIX
 # =====================
 def handle_oauth_callback(code):
-    flow = Flow.from_client_config(
-        client_config,
-        scopes=SCOPES,
-        redirect_uri=REDIRECT_URI
-    )
+    try:
+        flow = Flow.from_client_config(
+            client_config,
+            scopes=SCOPES,
+            redirect_uri=REDIRECT_URI
+        )
 
-    # IMPORTANT: recreate SAME flow
-    flow.fetch_token(code=code)
+        # IMPORTANT: fresh token exchange
+        flow.fetch_token(code=code)
 
-    creds = flow.credentials
+        creds = flow.credentials
 
-    with open("token.pkl", "wb") as f:
-        pickle.dump(creds, f)
+        with open("token.pkl", "wb") as f:
+            pickle.dump(creds, f)
 
-    return creds
+        return creds
+
+    except Exception as e:
+        print("OAuth ERROR:", e)
+        return None
 
 # =========================
 # LOAD CREDENTIALS
