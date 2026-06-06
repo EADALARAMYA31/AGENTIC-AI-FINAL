@@ -133,8 +133,12 @@ def auth_page():
 # GOOGLE PAGE
 # =========================
 def google_page():
-    handle_login_callback()
+
+    if st.query_params.get("code"):
+        handle_login_callback()
+
     st.title("Google Connect")
+
     auth_url = get_calendar_auth_url()
     st.link_button("Continue with Google", auth_url)
 
