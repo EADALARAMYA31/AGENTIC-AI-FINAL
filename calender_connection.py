@@ -8,7 +8,7 @@ from googleapiclient.discovery import build
 # =========================
 # CONFIG
 # =========================
-REDIRECT_URI = "https://agentic-ai-final.streamlit.app/"
+REDIRECT_URI = "https://agentic-ai-final.streamlit.app"
 SCOPES = ["https://www.googleapis.com/auth/calendar", "https://www.googleapis.com/auth/userinfo.profile", "https://www.googleapis.com/auth/userinfo.email", "openid"]
 client_config = {
     "web": {
@@ -49,17 +49,20 @@ def get_calendar_auth_url():
 # =========================
 # 2. HANDLE CALLBACK
 # =========================
-def handle_oauth_callback(auth_code, state=None):
-
+def handle_oauth_callback(auth_code):
     try:
         flow = Flow.from_client_config(
             client_config,
             scopes=SCOPES,
-            redirect_uri=REDIRECT_URI,
-            state=state
+            redirect_uri=REDIRECT_URI
         )
 
-        flow.fetch_token(code=auth_code)
+        # IMPORTANT: force fresh flow every time
+        flow.redirect_uri = REDIRECT_URI
+
+        flow.fetch_token(
+            code=auth_code
+        )
 
         creds = flow.credentials
 
@@ -69,7 +72,7 @@ def handle_oauth_callback(auth_code, state=None):
         return creds
 
     except Exception as e:
-        st.error(f"OAuth Error: {e}")
+        print("OAUTH ERROR:", e)
         return None
 
 # =========================

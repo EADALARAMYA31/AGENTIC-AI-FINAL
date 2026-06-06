@@ -66,44 +66,38 @@ if "username" not in st.session_state:
 # OAUTH CALLBACK
 # =========================
 def handle_login_callback():
-    if st.session_state.get("oauth_done"):
-        return
-
     code = st.query_params.get("code")
 
     if not code:
+        return
+
+    if st.session_state.get("oauth_done"):
         return
 
     st.session_state["oauth_done"] = True
 
     creds = handle_oauth_callback(code)
 
-    if not creds:
-        st.session_state["oauth_done"] = False
-        return
+    if creds:
+        profile = get_google_profile_info(creds)
 
-    profile = get_google_profile_info(creds)
+        email = profile["email"]
+        name = profile["name"]
 
-    email = profile["email"]
-    name = profile["name"]
-
-    user = get_user_by_email(email)
-
-    if not user:
-        register_user(name, "google-oauth", email=email, provider="google")
         user = get_user_by_email(email)
 
-    st.session_state.update({
-        "user_id": user[0],
-        "username": name,
-        "app_stage": "dashboard"
-    })
+        if not user:
+            register_user(name, "google-oauth", email=email, provider="google")
+            user = get_user_by_email(email)
 
-    st.query_params.clear()
-    st.rerun()
+        # 🔥 CRITICAL ORDER
+        st.session_state["user_id"] = user[0]
+        st.session_state["username"] = name
+        st.session_state["app_stage"] = "dashboard"
 
+        st.query_params.clear()
+        st.rerun()
 
-handle_login_callback()
 
 
 
@@ -149,12 +143,6 @@ def auth_page():
 # =========================
 def google_page():
     st.title("🔗 Google Calendar Connect")
-
-    if not st.session_state.get("user_id"):
-        st.warning("Please login first")
-        st.session_state["app_stage"] = "auth"
-        return
-
     st.write("Welcome:", st.session_state.get("username"))
 
     # ❌ DO NOT cache auth_url
@@ -4017,6 +4005,8 @@ def dashboard():
 # =========================
 # ROUTING
 # =========================
+handle_login_callback()
+
 if st.session_state["app_stage"] == "auth":
     auth_page()
 
@@ -4024,6 +4014,5 @@ elif st.session_state["app_stage"] == "google":
     google_page()
 
 elif st.session_state["app_stage"] == "dashboard":
-    st.title("🚀 DASHBOARD")
-    st.success(f"Welcome {st.session_state['username']}")
+    dashboard()
 
