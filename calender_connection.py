@@ -55,8 +55,6 @@ def handle_oauth_callback(code):
         scopes=SCOPES,
         redirect_uri=REDIRECT_URI
     )
-    # 🔥 IMPORTANT: disable PKCE issues
-    flow.redirect_uri = REDIRECT_URI
 
     flow.fetch_token(code=code)
 
