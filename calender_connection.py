@@ -23,22 +23,23 @@ client_config = {
 # =========================
 # 1. GENERATE GOOGLE LOGIN URL
 # =========================
-def get_calendar_auth_url():
-    flow = Flow.from_client_config(
+def get_flow():
+    return Flow.from_client_config(
         client_config,
         scopes=SCOPES,
-        redirect_uri=REDIRECT_URI
+        redirect_uri=REDIRECT_URI,
     )
+
+def get_calendar_auth_url():
+    flow = get_flow()
 
     auth_url, state = flow.authorization_url(
         access_type="offline",
-        prompt="consent",
-        include_granted_scopes="true"
+        include_granted_scopes=True,
+        prompt="consent"
     )
 
-    # store state for validation
     st.session_state["oauth_state"] = state
-
     return auth_url
 
 
@@ -46,23 +47,21 @@ def get_calendar_auth_url():
 # 2. HANDLE CALLBACK
 # =========================
 def handle_oauth_callback(code):
-    try:
-        flow = Flow.from_client_config(
-            client_config,
-            scopes=SCOPES,
-            redirect_uri=REDIRECT_URI
-        )
+    flow = get_flow()
 
-        # IMPORTANT: one-time exchange only
-        flow.fetch_token(code=code)
+    # IMPORTANT: DO NOT modify flow after creation
 
-        creds = flow.credentials
+    flow.fetch_token(
+        code=code,
+        include_client_id=True
+    )
 
-        return creds
+    creds = flow.credentials
 
-    except Exception as e:
-        print("OAUTH ERROR:", e)
-        return None
+    with open("token.pkl", "wb") as f:
+        pickle.dump(creds, f)
+
+    return creds
 
 # =========================
 # 3. LOAD SAVED CREDENTIALS

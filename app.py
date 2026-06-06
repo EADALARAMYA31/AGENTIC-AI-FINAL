@@ -4000,10 +4000,11 @@ def dashboard():
                 st.rerun()
 
 
+handle_login_callback()
+
 app_stage = st.session_state.get("app_stage", "auth")
 
 if app_stage == "auth":
-    handle_login_callback()   # 🔥 ONLY HERE
     auth_page()
 
 elif app_stage == "google":
@@ -4011,8 +4012,4 @@ elif app_stage == "google":
 
 elif app_stage == "dashboard":
     dashboard()
-
-else:
-    st.session_state["app_stage"] = "auth"
-    st.rerun()
 
