@@ -168,7 +168,19 @@ def google_page():
 def dashboard():
     # Clear query params once we’re safely in dashboard
     if st.session_state.get("navigation") == "🚪 Logout":
-        st.session_state.clear()
+        keys_to_clear = [
+            "user_id",
+            "username",
+            "auth_url",
+            "oauth_processed",
+            "google_connected",
+            "app_stage"
+        ]
+
+        for key in keys_to_clear:
+            if key in st.session_state:
+                del st.session_state[key]
+
         st.session_state["app_stage"] = "auth"
         st.rerun()
 
