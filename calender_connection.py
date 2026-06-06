@@ -38,12 +38,12 @@ def get_calendar_auth_url():
         prompt="consent"
     )
 
-    st.session_state["oauth_state"] = state
+    #st.session_state["oauth_state"] = state
 
     # Save verifier globally
     with open("oauth_verifier.txt", "w") as f:
         f.write(flow.code_verifier)
-
+    st.write("WRITING VERIFIER =", flow.code_verifier)
     return auth_url
 
 
@@ -52,15 +52,14 @@ def get_calendar_auth_url():
 # =====================
 def handle_oauth_callback(code):
     try:
+        with open("oauth_verifier.txt", "r") as f:
+            verifier = f.read()
+
         flow = Flow.from_client_config(
             client_config,
             scopes=SCOPES,
             redirect_uri=REDIRECT_URI
         )
-
-        verifier = st.session_state.get("code_verifier")
-
-        st.write("VERIFIER =", verifier)
 
         flow.code_verifier = verifier
 
@@ -69,11 +68,7 @@ def handle_oauth_callback(code):
         return flow.credentials
 
     except Exception as e:
-        import traceback
-
         st.error(str(e))
-        st.code(traceback.format_exc())
-
         return None
 # =========================
 # LOAD CREDENTIALS
