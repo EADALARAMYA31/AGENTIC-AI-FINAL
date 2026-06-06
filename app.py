@@ -130,6 +130,11 @@ def auth_page():
 def google_page():
     st.title("Google Connect")
 
+    st.write(
+        "LOGIN VERIFIER =",
+        st.session_state.get("code_verifier")
+    )
+
     auth_url = get_calendar_auth_url()
     st.link_button("Continue with Google", auth_url)
 
