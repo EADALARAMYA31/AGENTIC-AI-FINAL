@@ -74,7 +74,7 @@ def handle_login_callback():
     if st.session_state.get("oauth_done"):
         return
 
-    st.session_state["oauth_done"] = True  # BLOCK LOOP
+    st.session_state["oauth_done"] = True
 
     creds = handle_oauth_callback(code)
 
@@ -93,9 +93,12 @@ def handle_login_callback():
         register_user(name, "google-oauth", email=email, provider="google")
         user = get_user_by_email(email)
 
-    st.session_state["user_id"] = user[0]
-    st.session_state["username"] = name
-    st.session_state["app_stage"] = "dashboard"
+    st.session_state.update({
+        "user_id": user[0],
+        "username": name,
+        "app_stage": "dashboard",
+        "oauth_done": True
+    })
 
     st.query_params.clear()
     st.rerun()
@@ -138,12 +141,13 @@ def auth_page():
 # GOOGLE PAGE
 # =========================
 def google_page():
-    st.title("🔗 Google Calendar Connect")
-    st.write("Welcome:", st.session_state.get("username"))
+    if not st.session_state.get("user_id"):
+        st.session_state["app_stage"] = "auth"
+        return
 
-    # ❌ DO NOT cache auth_url
+    st.title("Google Connect")
+
     auth_url = get_calendar_auth_url()
-
     st.link_button("Continue with Google", auth_url)
 
 
@@ -3996,19 +4000,19 @@ def dashboard():
 
 
 # =========================
-# ROUTER
-# =========================
-# =========================
 # ROUTING
 # =========================
-handle_login_callback()
 
-if st.session_state["app_stage"] == "auth":
+app_stage = st.session_state.get("app_stage", "auth")
+
+if app_stage == "auth":
+    handle_login_callback()   # ONLY check OAuth in auth stage
     auth_page()
 
-elif st.session_state["app_stage"] == "google":
+elif app_stage == "google":
     google_page()
 
-elif st.session_state["app_stage"] == "dashboard":
+elif app_stage == "dashboard":
     dashboard()
+
 
