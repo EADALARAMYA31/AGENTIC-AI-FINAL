@@ -70,7 +70,8 @@ def handle_login_callback():
 
     if not code:
         return
-
+    if "oauth_done" not in st.session_state:
+        st.session_state["oauth_done"] = False
     # prevent double execution
     if st.session_state.get("oauth_done"):
         return
