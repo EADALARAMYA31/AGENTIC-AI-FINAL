@@ -375,8 +375,15 @@ def update_goal_progress(
 def get_user_by_email(email):
     conn = get_connection()
     cur = conn.cursor()
-    cur.execute("SELECT id, username FROM users WHERE email=%s", (email,))
+
+    cur.execute("""
+        SELECT id, username
+        FROM users
+        WHERE LOWER(email)=LOWER(%s)
+    """, (email,))
+
     user = cur.fetchone()
+
     cur.close()
     conn.close()
     return user

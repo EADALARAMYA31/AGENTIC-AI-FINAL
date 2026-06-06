@@ -82,13 +82,21 @@ def handle_login_callback():
 
     profile = get_google_profile_info(creds)
 
-    email = profile["email"]
+    email = profile["email"].strip().lower()
 
     user = get_user_by_email(email)
 
+# ✅ AUTO CREATE USER IF NOT EXISTS
     if not user:
-        st.error("This Google account is not registered")
-        return
+        user = register_user(
+            username=profile["name"],
+            password="google_auth",
+            email=email,
+            provider="google"
+        )
+
+    # register_user returns True, so fetch again
+        user = get_user_by_email(email)
 
     st.session_state["user_id"] = user[0]
     st.session_state["username"] = user[1]
