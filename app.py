@@ -66,21 +66,16 @@ for key, value in defaults.items():
 # =========================
 # OAUTH CALLBACK
 def handle_login_callback():
-    params = st.query_params
-
-    code = params.get("code")
-
-    # handle list case (Streamlit bug)
-    if isinstance(code, list):
-        code = code[0]
+    code = st.query_params.get("code")
 
     if not code:
         return
 
+    if isinstance(code, list):
+        code = code[0]
+
     if st.session_state.get("oauth_done"):
         return
-
-    st.session_state["oauth_done"] = True
 
     creds = handle_oauth_callback(code)
 
@@ -93,12 +88,11 @@ def handle_login_callback():
     st.session_state.update({
         "user_id": 1,
         "username": profile["name"],
-        "app_stage": "dashboard"
+        "app_stage": "dashboard",
+        "oauth_done": True
     })
 
-    # IMPORTANT: clear URL AFTER setting state
     st.query_params.clear()
-
     st.rerun()
 # =========================
 # AUTH PAGE
@@ -139,6 +133,7 @@ def auth_page():
 # GOOGLE PAGE
 # =========================
 def google_page():
+    handle_login_callback()
     st.title("Google Connect")
     auth_url = get_calendar_auth_url()
     st.link_button("Continue with Google", auth_url)
@@ -3994,7 +3989,7 @@ def dashboard():
 
 
 # 🚨 MUST BE CALLED HERE (NOT INSIDE ANY PAGE)
-handle_login_callback()
+
 
 stage = st.session_state.get("app_stage", "auth")
 
