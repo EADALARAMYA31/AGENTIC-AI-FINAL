@@ -55,26 +55,29 @@ def get_calendar_auth_url():
 # =====================
 def handle_oauth_callback(code):
     try:
-        with open("oauth_verifier.txt", "r") as f:
-            verifier = f.read()
-
         flow = Flow.from_client_config(
             client_config,
             scopes=SCOPES,
             redirect_uri=REDIRECT_URI
         )
 
-        flow.code_verifier = verifier
+        # IMPORTANT: prevent Streamlit double execution issue
+        import time
+        time.sleep(0.5)
 
         flow.fetch_token(code=code)
-        st.success("TOKEN SUCCESS")
-        return flow.credentials
+
+        creds = flow.credentials
+
+        # SAVE TOKEN SAFELY (this fixes calendar issue)
+        with open("token.pkl", "wb") as f:
+            pickle.dump(creds, f)
+
+        return creds
 
     except Exception as e:
-        st.error(repr(e))
-        import traceback
-        st.code(traceback.format_exc())
-    return None
+        print("OAUTH ERROR =", e)
+        return None
 # =========================
 # LOAD CREDENTIALS
 # =========================
@@ -85,8 +88,12 @@ def load_creds():
         with open("token.pkl", "rb") as token:
             creds = pickle.load(token)
 
-    if creds and creds.expired and creds.refresh_token:
+    if not creds:
+        return None
+
+    if creds.expired and creds.refresh_token:
         creds.refresh(Request())
+
         with open("token.pkl", "wb") as token:
             pickle.dump(creds, token)
 
@@ -97,8 +104,11 @@ def load_creds():
 # =========================
 def get_calendar_service():
     creds = load_creds()
-    if not creds:
+
+    if creds is None:
+        print("SERVICE = None")
         return None
+
     return build("calendar", "v3", credentials=creds)
 
 # =========================
