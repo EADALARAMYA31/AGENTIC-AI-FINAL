@@ -54,7 +54,8 @@ st.set_page_config(
 # SESSION STATE INIT
 # =========================
 if "app_stage" not in st.session_state:
-    st.session_state["app_stage"] = None
+    st.session_state["app_stage"] = "auth"
+
 
 if "oauth_processed" not in st.session_state:
     st.session_state["oauth_processed"] = False
@@ -70,29 +71,34 @@ if "username" not in st.session_state:
 def handle_login_callback():
     code = st.query_params.get("code")
 
-    if code and not st.session_state["oauth_processed"]:
+    if not code:
+        return
 
-        st.session_state["oauth_processed"] = True
+    if st.session_state.get("oauth_processed"):
+        return
 
-        creds = handle_oauth_callback(code)
+    st.session_state["oauth_processed"] = True
 
-        if creds:
-            profile = get_google_profile_info(creds)
-            email = profile["email"]
-            name = profile["name"]
+    creds = handle_oauth_callback(code)
 
+    if creds:
+        profile = get_google_profile_info(creds)
+
+        email = profile["email"]
+        name = profile["name"]
+
+        user = get_user_by_email(email)
+
+        if not user:
+            register_user(name, "google-oauth", email=email, provider="google")
             user = get_user_by_email(email)
 
-            if not user:
-                register_user(name, "google-oauth", email=email, provider="google")
-                user = get_user_by_email(email)
+        st.session_state["user_id"] = user[0]
+        st.session_state["username"] = name
+        st.session_state["app_stage"] = "dashboard"
 
-            st.session_state["user_id"] = user[0]
-            st.session_state["username"] = name
-            st.session_state["app_stage"] = "dashboard"
-
-            st.query_params.clear()
-            st.rerun()
+        st.query_params.clear()
+        st.rerun()
 
 handle_login_callback()
 
@@ -129,6 +135,7 @@ def auth_page():
                 st.session_state["user_id"] = user[0]
                 st.session_state["username"] = user[1]
                 st.session_state["app_stage"] = "google"
+                st.session_state["oauth_processed"] = False
                 st.rerun()
             else:
                 st.error("Invalid login")
@@ -140,20 +147,25 @@ def auth_page():
 def google_page():
     st.title("🔗 Google Calendar Connect")
 
+    if not st.session_state.get("user_id"):
+        st.warning("Please login first")
+        st.session_state["app_stage"] = "auth"
+        st.rerun()
+
     st.write("Welcome:", st.session_state.get("username"))
 
-    # ❌ DO NOT cache auth_url forever (causes OAuth issues)
-    auth_url = get_calendar_auth_url()
+    if "auth_url" not in st.session_state:
+        st.session_state["auth_url"] = get_calendar_auth_url()
 
-    st.link_button("Continue with Google", auth_url)
+    st.link_button("Continue with Google", st.session_state["auth_url"])
 
 # =========================
 # DASHBOARD
 # =========================
 def dashboard():
     # Clear query params once we’re safely in dashboard
-    if not st.session_state.get("user_id"):
-        st.error("Session expired. Please login again.")
+    if st.session_state.get("navigation") == "🚪 Logout":
+        st.session_state.clear()
         st.session_state["app_stage"] = "auth"
         st.rerun()
 
@@ -3986,11 +3998,11 @@ def dashboard():
 # =========================
 # ROUTER
 # =========================
-if st.session_state.get("app_stage") == "dashboard":
-    dashboard()
+if st.session_state["app_stage"] == "auth":
+    auth_page()
 
-elif st.session_state.get("app_stage") == "google":
+elif st.session_state["app_stage"] == "google":
     google_page()
 
-else:
-    auth_page()
+elif st.session_state["app_stage"] == "dashboard":
+    dashboard()
