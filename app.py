@@ -66,12 +66,16 @@ for key, value in defaults.items():
 # =========================
 # OAUTH CALLBACK
 def handle_login_callback():
+
+    # Prevent processing same OAuth callback twice
+    if st.session_state.get("oauth_done"):
+        return
+
     code = st.query_params.get("code")
 
     st.write("DEBUG code =", code)
 
     if not code:
-        st.write("DEBUG: No code")
         return
 
     creds = handle_oauth_callback(code)
@@ -83,12 +87,16 @@ def handle_login_callback():
         return
 
     profile = get_google_profile_info(creds)
-    st.write("STATE CALLBACK =", st.query_params.get("state"))
+
     st.write("DEBUG profile =", profile)
+
     st.session_state["user_id"] = 1
     st.session_state["username"] = profile["name"]
     st.session_state["app_stage"] = "dashboard"
-    st.session_state["app_stage"] = "dashboard"
+    st.session_state["oauth_done"] = True
+
+    # Remove code and state from URL
+    st.query_params.clear()
 
     st.rerun()
 # =========================
