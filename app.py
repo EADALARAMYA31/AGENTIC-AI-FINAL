@@ -93,16 +93,13 @@ def handle_login_callback():
             user = get_user_by_email(email)
 
         # 🔥 FORCE STATE FIRST
-        st.session_state.update({
-            "user_id": user[0],
-            "username": name,
-            "app_stage": "dashboard"
-        })
-
+        st.session_state["user_id"] = user[0]
+        st.session_state["username"] = name
+        st.session_state["app_stage"] = "dashboard"
+        st.session_state["oauth_processed"] = True
         st.query_params.clear()
-
-        # small delay safety (IMPORTANT)
         st.rerun()
+
 
 handle_login_callback()
 
@@ -151,10 +148,11 @@ def auth_page():
 def google_page():
     st.title("🔗 Google Calendar Connect")
 
-    if not st.session_state.get("user_id"):
+    # Only redirect if we truly have no user AND not already in dashboard
+    if not st.session_state.get("user_id") and st.session_state.get("app_stage") != "dashboard":
         st.warning("Please login first")
         st.session_state["app_stage"] = "auth"
-        st.rerun()
+        return  # no rerun here, let routing handle it
 
     st.write("Welcome:", st.session_state.get("username"))
 
@@ -162,6 +160,7 @@ def google_page():
         st.session_state["auth_url"] = get_calendar_auth_url()
 
     st.link_button("Continue with Google", st.session_state["auth_url"])
+
 
 # =========================
 # DASHBOARD
@@ -4002,11 +4001,19 @@ def dashboard():
 # =========================
 # ROUTER
 # =========================
-if st.session_state["app_stage"] == "auth":
+# =========================
+# ROUTING
+# =========================
+stage = st.session_state.get("app_stage", "auth")
+
+if stage == "auth":
+    auth_page()
+elif stage == "google":
+    google_page()
+elif stage == "dashboard":
+    dashboard()
+else:
+    # fallback
+    st.session_state["app_stage"] = "auth"
     auth_page()
 
-elif st.session_state["app_stage"] == "google":
-    google_page()
-
-elif st.session_state["app_stage"] == "dashboard":
-    dashboard()
