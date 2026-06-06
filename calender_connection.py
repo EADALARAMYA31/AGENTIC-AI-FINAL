@@ -27,21 +27,24 @@ client_config = {
 # =====================
 # STEP 1: LOGIN URL
 # =====================
-def get_calendar_auth_url():
-    flow = Flow.from_client_config(
+def get_flow():
+    return Flow.from_client_config(
         client_config,
         scopes=SCOPES,
         redirect_uri=REDIRECT_URI
     )
 
+def get_calendar_auth_url():
+    flow = get_flow()
+
     auth_url, state = flow.authorization_url(
         access_type="offline",
         prompt="consent",
-        #include_granted_scopes="true"
+        include_granted_scopes=True
     )
 
     st.session_state["oauth_state"] = state
-    #st.session_state["oauth_flow"] = flow   # 🔥 IMPORTANT
+    st.session_state["oauth_flow"] = flow   # 🔥 REQUIRED
 
     return auth_url
 
@@ -49,30 +52,27 @@ def get_calendar_auth_url():
 # =====================
 # STEP 2: CALLBACK FIX
 # =====================
-def handle_oauth_callback(code):
-    import requests
+def handle_oauth_callback():
+    code = st.query_params.get("code")
 
-    token_url = "https://oauth2.googleapis.com/token"
-
-    data = {
-        "code": code,
-        "client_id": st.secrets["GOOGLE_CLIENT_ID"],
-        "client_secret": st.secrets["GOOGLE_CLIENT_SECRET"],
-        "redirect_uri": "https://agentic-ai-final.streamlit.app/",
-        "grant_type": "authorization_code"
-    }
-
-    response = requests.post(token_url, data=data)
-
-    if response.status_code != 200:
-        print(response.text)
+    if not code:
         return None
 
-    token_data = response.json()
+    flow = st.session_state.get("oauth_flow")
 
-    creds = token_data  # simplified storage
+    if not flow:
+        st.error("OAuth session lost. Please login again.")
+        return None
 
-    return creds
+    try:
+        flow.fetch_token(code=code)
+        creds = flow.credentials
+
+        return creds
+
+    except Exception as e:
+        st.error(f"OAuth failed: {e}")
+        return None
 
 # =========================
 # LOAD CREDENTIALS

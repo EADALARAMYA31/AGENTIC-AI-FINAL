@@ -66,30 +66,16 @@ for key, value in defaults.items():
 # =========================
 # OAUTH CALLBACK
 def handle_login_callback():
-    code = st.query_params.get("code")
-
-    if isinstance(code, list):
-        code = code[0]
-
-    if not code:
-        return
-
-    if st.session_state.get("oauth_done"):
-        return
-
-    st.session_state["oauth_done"] = True
-
-    creds = handle_oauth_callback(code)
+    creds = handle_oauth_callback()
 
     if not creds:
-        st.session_state["oauth_done"] = False
         return
 
-    st.session_state.update({
-        "user_id": 1,
-        "username": "Google User",
-        "app_stage": "dashboard"
-    })
+    profile = get_google_profile_info(creds)
+
+    st.session_state["user_id"] = 1
+    st.session_state["username"] = profile["name"]
+    st.session_state["app_stage"] = "dashboard"
 
     st.query_params.clear()
     st.rerun()
