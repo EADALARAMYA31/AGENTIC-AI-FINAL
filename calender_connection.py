@@ -47,13 +47,23 @@ def get_calendar_auth_url():
 # STEP 2: CALLBACK FIX
 # =====================
 def handle_oauth_callback(code):
-    flow = Flow.from_client_config(
-        client_config,
-        scopes=SCOPES,
-        redirect_uri=REDIRECT_URI
-    )
+    try:
+        flow = Flow.from_client_config(
+            client_config,
+            scopes=SCOPES,
+            redirect_uri=REDIRECT_URI
+        )
 
-    flow.fetch_token(code=code)
+        st.write("REDIRECT_URI =", REDIRECT_URI)
+        st.write("STATE =", st.query_params.get("state"))
+
+        flow.fetch_token(code=code)
+
+        return flow.credentials
+
+    except Exception as e:
+        st.error(f"FULL ERROR: {repr(e)}")
+        return None
 
 # =========================
 # LOAD CREDENTIALS
