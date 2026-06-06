@@ -8,7 +8,7 @@ from googleapiclient.discovery import build
 # =========================
 # CONFIG
 # =========================
-REDIRECT_URI = "https://agentic-ai-final.streamlit.app/"
+REDIRECT_URI = "https://agentic-ai-final.streamlit.app"
 SCOPES = ["https://www.googleapis.com/auth/calendar", "https://www.googleapis.com/auth/userinfo.profile", "https://www.googleapis.com/auth/userinfo.email", "openid"]
 client_config = {
     "web": {
@@ -58,7 +58,7 @@ def handle_oauth_callback(auth_code):
         )
 
         # ❌ DO NOT set code_verifier manually
-        flow.redirect_uri = REDIRECT_URI
+
         flow.fetch_token(code=auth_code)
 
         creds = flow.credentials
