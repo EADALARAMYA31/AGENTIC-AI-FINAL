@@ -25,40 +25,56 @@ client_config = {
 }
 # =====================
 # STEP 1: LOGIN URL
-# =====================
+# ====================
 def get_calendar_auth_url():
-    flow = Flow.from_client_config(
-        client_config,
-        scopes=SCOPES,
-        redirect_uri=REDIRECT_URI
-    )
+    import urllib.parse
 
-    auth_url, state = flow.authorization_url(
-        access_type="offline",
-        prompt="consent"
-    )
+    params = {
+        "client_id": client_config["web"]["client_id"],
+        "redirect_uri": REDIRECT_URI,
+        "response_type": "code",
+        "scope": " ".join(SCOPES),
+        "access_type": "offline",
+        "prompt": "consent"
+    }
 
-    st.session_state["oauth_state"] = state
-    return auth_url
+    url = "https://accounts.google.com/o/oauth2/v2/auth?" + urllib.parse.urlencode(params)
+
+    return url
 
 
 # =====================
 # STEP 2: CALLBACK
 # =====================
+import requests
+
 def handle_oauth_callback(code):
     try:
-        flow = Flow.from_client_config(
-            client_config,
-            scopes=SCOPES,
-            redirect_uri=REDIRECT_URI
+        data = {
+            "code": code,
+            "client_id": client_config["web"]["client_id"],
+            "client_secret": client_config["web"]["client_secret"],
+            "redirect_uri": REDIRECT_URI,
+            "grant_type": "authorization_code"
+        }
+
+        token_url = "https://oauth2.googleapis.com/token"
+        r = requests.post(token_url, data=data)
+        token_data = r.json()
+
+        if "access_token" not in token_data:
+            st.error(token_data)
+            return None
+
+        from google.oauth2.credentials import Credentials
+
+        creds = Credentials(
+            token=token_data["access_token"],
+            refresh_token=token_data.get("refresh_token"),
+            token_uri=token_url,
+            client_id=client_config["web"]["client_id"],
+            client_secret=client_config["web"]["client_secret"],
         )
-
-        # IMPORTANT: do NOT set code_verifier
-        flow.redirect_uri = REDIRECT_URI
-
-        flow.fetch_token(code=code)
-
-        creds = flow.credentials
 
         with open("token.pkl", "wb") as f:
             pickle.dump(creds, f)
