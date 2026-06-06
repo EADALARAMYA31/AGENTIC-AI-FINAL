@@ -35,8 +35,7 @@ def get_calendar_auth_url():
 
     auth_url, state = flow.authorization_url(
         access_type="offline",
-        prompt="consent",
-        include_granted_scopes="true"
+        prompt="consent"
     )
 
     st.session_state["oauth_state"] = state
@@ -54,12 +53,16 @@ def handle_oauth_callback(code):
             redirect_uri=REDIRECT_URI
         )
 
-        # ❌ DO NOT set verifier
-        flow.fetch_token(code=code)
+        # 🚨 FORCE NON-PKCE MODE
+        flow.redirect_uri = REDIRECT_URI
+
+        creds = flow.fetch_token(
+            code=code,
+            include_client_id=True
+        )
 
         creds = flow.credentials
 
-        # save token
         with open("token.pkl", "wb") as f:
             pickle.dump(creds, f)
 
