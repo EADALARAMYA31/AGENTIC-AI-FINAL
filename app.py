@@ -66,28 +66,33 @@ for key, value in defaults.items():
 # =========================
 # OAUTH CALLBACK
 def handle_login_callback():
+
+    # ✅ prevent duplicate execution
+    if st.session_state.get("oauth_handled"):
+        return
+
     code = st.query_params.get("code")
 
-    st.write("DEBUG code =", code)
-
     if not code:
-        st.write("DEBUG: No code")
         return
 
     creds = handle_oauth_callback(code)
 
-    st.write("DEBUG creds =", creds)
-
     if not creds:
-        st.error("OAuth callback failed")
+        st.error("OAuth failed")
         return
 
     profile = get_google_profile_info(creds)
-    st.write("STATE CALLBACK =", st.query_params.get("state"))
-    st.write("DEBUG profile =", profile)
+
     st.session_state["user_id"] = 1
     st.session_state["username"] = profile["name"]
     st.session_state["app_stage"] = "dashboard"
+
+    # ✅ mark handled
+    st.session_state["oauth_handled"] = True
+
+    # cleanup URL
+    st.query_params.clear()
 
     st.rerun()
 # =========================

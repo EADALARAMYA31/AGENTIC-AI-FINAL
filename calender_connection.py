@@ -38,15 +38,7 @@ def get_calendar_auth_url():
         prompt="consent"
     )
 
-    #st.session_state["oauth_state"] = state
-
-    # Save verifier globally
-    with open("oauth_verifier.txt", "w") as f:
-        f.write(flow.code_verifier)
-    st.session_state["code_verifier"] = flow.code_verifier
-
-    st.write("SAVED VERIFIER =", flow.code_verifier)
-    st.write("WRITING VERIFIER =", flow.code_verifier)
+    st.session_state["oauth_state"] = state
     return auth_url
 
 
@@ -61,54 +53,42 @@ def handle_oauth_callback(code):
             redirect_uri=REDIRECT_URI
         )
 
-        # IMPORTANT: prevent Streamlit double execution issue
-        import time
-        time.sleep(0.5)
-
         flow.fetch_token(code=code)
-
         creds = flow.credentials
 
-        # SAVE TOKEN SAFELY (this fixes calendar issue)
+        # ✅ SAVE TOKEN
         with open("token.pkl", "wb") as f:
             pickle.dump(creds, f)
 
         return creds
 
     except Exception as e:
-        print("OAUTH ERROR =", e)
+        st.error(f"OAuth Error: {e}")
         return None
 # =========================
 # LOAD CREDENTIALS
 # =========================
 def load_creds():
-    creds = None
-
     if os.path.exists("token.pkl"):
-        with open("token.pkl", "rb") as token:
-            creds = pickle.load(token)
+        with open("token.pkl", "rb") as f:
+            creds = pickle.load(f)
 
-    if not creds:
-        return None
+        if creds and creds.expired and creds.refresh_token:
+            creds.refresh(Request())
+            with open("token.pkl", "wb") as f:
+                pickle.dump(creds, f)
 
-    if creds.expired and creds.refresh_token:
-        creds.refresh(Request())
+        return creds
 
-        with open("token.pkl", "wb") as token:
-            pickle.dump(creds, token)
-
-    return creds
+    return None
 
 # =========================
 # GOOGLE CALENDAR SERVICE
 # =========================
 def get_calendar_service():
     creds = load_creds()
-
-    if creds is None:
-        print("SERVICE = None")
+    if not creds:
         return None
-
     return build("calendar", "v3", credentials=creds)
 
 # =========================
