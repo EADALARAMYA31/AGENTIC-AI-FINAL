@@ -107,10 +107,12 @@ def load_creds(user_id):
 # =========================
 # GOOGLE CALENDAR SERVICE
 # =========================
-def get_calendar_service():
-    creds = load_creds()
+def get_calendar_service(user_id):
+    creds = load_creds(user_id)
+
     if not creds:
         return None
+
     return build("calendar", "v3", credentials=creds)
 
 # =========================
