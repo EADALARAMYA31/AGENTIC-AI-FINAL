@@ -47,19 +47,22 @@ def get_calendar_auth_url():
 # STEP 2: CALLBACK FIX
 # =====================
 def handle_oauth_callback(code):
-    flow = Flow.from_client_config(
-        client_config,
-        scopes=SCOPES,
-        redirect_uri=REDIRECT_URI
-    )
-
     try:
+        flow = Flow.from_client_config(
+            client_config,
+            scopes=SCOPES,
+            redirect_uri=REDIRECT_URI
+        )
+
         flow.fetch_token(code=code)
-        return flow.credentials
+
+        creds = flow.credentials
+
+        return creds
 
     except Exception as e:
-        st.error(f"OAuth ERROR: {e}")
-        print("OAuth ERROR:", e)
+        st.error(f"OAUTH ERROR = {e}")
+        print("OAUTH ERROR =", e)
         return None
 
 # =========================
