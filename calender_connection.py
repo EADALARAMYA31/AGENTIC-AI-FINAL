@@ -53,7 +53,7 @@ def handle_oauth_callback(code):
 
     flow.fetch_token(
         code=auth_code,
-        include_client_id=True
+        include_client_id="true"
     )
     creds = flow.credentials
 
