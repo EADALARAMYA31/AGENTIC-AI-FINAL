@@ -66,9 +66,12 @@ def handle_oauth_callback(code):
 
         flow.code_verifier = verifier
 
-        flow.fetch_token(code=code)
-        st.success("TOKEN SUCCESS")
-        return flow.credentials
+        creds = flow.credentials
+
+        with open("token.pkl", "wb") as token:
+            pickle.dump(creds, token)
+
+        return creds
 
     except Exception as e:
         st.error(repr(e))
