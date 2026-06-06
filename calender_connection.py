@@ -46,16 +46,23 @@ def get_calendar_auth_url():
 # 2. HANDLE CALLBACK
 # =========================
 def handle_oauth_callback(code):
-    flow = Flow.from_client_config(
-        client_config,
-        scopes=SCOPES,
-        redirect_uri=REDIRECT_URI
-    )
+    try:
+        flow = Flow.from_client_config(
+            client_config,
+            scopes=SCOPES,
+            redirect_uri=REDIRECT_URI
+        )
 
-    # IMPORTANT: restore state
-    flow.fetch_token(code=code)
+        # IMPORTANT: one-time exchange only
+        flow.fetch_token(code=code)
 
-    return flow.credentials
+        creds = flow.credentials
+
+        return creds
+
+    except Exception as e:
+        print("OAUTH ERROR:", e)
+        return None
 
 # =========================
 # 3. LOAD SAVED CREDENTIALS

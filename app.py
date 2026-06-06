@@ -66,15 +66,15 @@ for key, value in defaults.items():
 # =========================
 # OAUTH CALLBACK
 def handle_login_callback():
-    if st.session_state.get("oauth_done"):
-        return
-
     code = st.query_params.get("code")
 
     if not code:
         return
 
-    st.session_state["oauth_done"] = True  # BLOCK RE-RUN LOOP
+    if st.session_state.get("oauth_done"):
+        return
+
+    st.session_state["oauth_done"] = True  # BLOCK LOOP
 
     creds = handle_oauth_callback(code)
 
