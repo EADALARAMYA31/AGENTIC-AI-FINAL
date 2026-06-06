@@ -96,8 +96,7 @@ def handle_login_callback():
     st.session_state.update({
         "user_id": user[0],
         "username": name,
-        "app_stage": "dashboard",
-        "oauth_done": True
+        "app_stage": "dashboard"
     })
 
     st.query_params.clear()
@@ -141,9 +140,11 @@ def auth_page():
 # GOOGLE PAGE
 # =========================
 def google_page():
+    handle_login_callback()   # 🔥 ADD THIS LINE
+
     if not st.session_state.get("user_id"):
         st.session_state["app_stage"] = "auth"
-        return
+        st.rerun()
 
     st.title("Google Connect")
 
@@ -3999,14 +4000,10 @@ def dashboard():
                 st.rerun()
 
 
-# =========================
-# ROUTING
-# =========================
-
 app_stage = st.session_state.get("app_stage", "auth")
 
 if app_stage == "auth":
-    handle_login_callback()   # ONLY check OAuth in auth stage
+    handle_login_callback()   # 🔥 ONLY HERE
     auth_page()
 
 elif app_stage == "google":
@@ -4015,4 +4012,7 @@ elif app_stage == "google":
 elif app_stage == "dashboard":
     dashboard()
 
+else:
+    st.session_state["app_stage"] = "auth"
+    st.rerun()
 
