@@ -82,14 +82,24 @@ def handle_login_callback():
 
     profile = get_google_profile_info(creds)
 
-    st.session_state["user_id"] = 1
-    st.session_state["username"] = profile["name"]
+    email = profile["email"]
+
+    user = get_user_by_email(email)
+
+    if not user:
+        st.error("This Google account is not registered")
+        return
+
+    st.session_state["user_id"] = user[0]
+    st.session_state["username"] = user[1]
+
     st.session_state["app_stage"] = "dashboard"
     st.session_state["google_connected"] = True
     st.session_state["oauth_handled"] = True
 
     st.query_params.clear()
     st.rerun()
+
 # =========================
 # AUTH PAGE
 # =========================
