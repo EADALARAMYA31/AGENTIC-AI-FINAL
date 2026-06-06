@@ -8,7 +8,7 @@ from googleapiclient.discovery import build
 # =========================
 # CONFIG
 # =========================
-REDIRECT_URI = "https://agentic-ai-final.streamlit.app"
+REDIRECT_URI = "https://agentic-ai-final.streamlit.app/"
 SCOPES = ["https://www.googleapis.com/auth/calendar", "https://www.googleapis.com/auth/userinfo.profile", "https://www.googleapis.com/auth/userinfo.email", "openid"]
 client_config = {
     "web": {
@@ -32,10 +32,13 @@ def get_calendar_auth_url():
 
     auth_url, state = flow.authorization_url(
         access_type="offline",
-        prompt="consent"
+        prompt="consent",
+        include_granted_scopes="true"
     )
 
+    # store state for validation
     st.session_state["oauth_state"] = state
+
     return auth_url
 
 
@@ -49,21 +52,10 @@ def handle_oauth_callback(code):
         redirect_uri=REDIRECT_URI
     )
 
-    # 🔥 FORCE STATE CHECK (fix PKCE mismatch)
-    if "oauth_state" in st.session_state:
-        flow.fetch_token(
-            code=code,
-            state=st.session_state["oauth_state"]
-        )
-    else:
-        flow.fetch_token(code=code)
+    # IMPORTANT: restore state
+    flow.fetch_token(code=code)
 
-    creds = flow.credentials
-
-    with open("token.pkl", "wb") as f:
-        pickle.dump(creds, f)
-
-    return creds
+    return flow.credentials
 
 # =========================
 # 3. LOAD SAVED CREDENTIALS

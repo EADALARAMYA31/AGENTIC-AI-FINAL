@@ -66,46 +66,39 @@ for key, value in defaults.items():
 # =========================
 # OAUTH CALLBACK
 def handle_login_callback():
+    if st.session_state.get("oauth_done"):
+        return
+
     code = st.query_params.get("code")
 
     if not code:
         return
-    if "oauth_done" not in st.session_state:
+
+    st.session_state["oauth_done"] = True  # BLOCK RE-RUN LOOP
+
+    creds = handle_oauth_callback(code)
+
+    if not creds:
         st.session_state["oauth_done"] = False
-    # prevent double execution
-    if st.session_state.get("oauth_done"):
         return
 
-    st.session_state["oauth_done"] = True
+    profile = get_google_profile_info(creds)
 
-    try:
-        creds = handle_oauth_callback(code)
+    email = profile["email"]
+    name = profile["name"]
 
-        if not creds:
-            st.session_state["oauth_done"] = False
-            return
+    user = get_user_by_email(email)
 
-        profile = get_google_profile_info(creds)
-
-        email = profile["email"]
-        name = profile["name"]
-
+    if not user:
+        register_user(name, "google-oauth", email=email, provider="google")
         user = get_user_by_email(email)
 
-        if not user:
-            register_user(name, "google-oauth", email=email, provider="google")
-            user = get_user_by_email(email)
+    st.session_state["user_id"] = user[0]
+    st.session_state["username"] = name
+    st.session_state["app_stage"] = "dashboard"
 
-        st.session_state["user_id"] = user[0]
-        st.session_state["username"] = name
-        st.session_state["app_stage"] = "dashboard"
-
-        st.query_params.clear()
-        st.rerun()
-
-    except Exception as e:
-        st.session_state["oauth_done"] = False
-        st.error(f"OAuth failed: {e}")
+    st.query_params.clear()
+    st.rerun()
 # =========================
 # AUTH PAGE
 # =========================
