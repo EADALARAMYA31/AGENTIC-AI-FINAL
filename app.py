@@ -92,7 +92,9 @@ def handle_login_callback():
     if not user:
         register_user(name, "google-oauth", email=email, provider="google")
         user = get_user_by_email(email)
-
+    if not user:
+        st.error("Google login failed: user not created")
+        return
     st.session_state.update({
         "user_id": user[0],
         "username": name,
