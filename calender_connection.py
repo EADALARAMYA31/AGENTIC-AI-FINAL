@@ -88,12 +88,7 @@ def handle_oauth_callback(code):
 # =========================
 # LOAD CREDENTIALS
 # =========================
-def load_creds():
-    user_id = st.session_state.get("user_id")
-
-    if not user_id:
-        return None
-
+def load_creds(user_id):
     token_file = f"token_{user_id}.pkl"
 
     if os.path.exists(token_file):
