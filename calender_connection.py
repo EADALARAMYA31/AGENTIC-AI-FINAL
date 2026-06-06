@@ -51,10 +51,8 @@ def handle_oauth_callback(code):
         redirect_uri=REDIRECT_URI
     )
 
-    flow.fetch_token(
-        code=auth_code,
-        include_client_id="true"
-    )
+    flow.fetch_token(code=code)   # ✅ FIXED HERE
+
     creds = flow.credentials
 
     with open("token.pkl", "wb") as f:
