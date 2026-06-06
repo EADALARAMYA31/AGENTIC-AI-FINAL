@@ -85,7 +85,7 @@ def handle_login_callback():
     st.session_state["user_id"] = 1
     st.session_state["username"] = profile["name"]
     st.session_state["app_stage"] = "dashboard"
-
+    st.session_state["google_connected"] = True
     st.session_state["oauth_handled"] = True
 
     st.query_params.clear()
@@ -132,7 +132,7 @@ def google_page():
 
     if "auth_url" not in st.session_state:
         st.session_state["auth_url"] = get_calendar_auth_url()
-    st.write("LOGIN VERIFIER =", st.session_state.get("code_verifier"))
+    #st.write("LOGIN VERIFIER =", st.session_state.get("code_verifier"))
     st.write("SESSION ID TEST")
     st.write(st.session_state)
     st.link_button(
