@@ -75,8 +75,9 @@ def handle_oauth_callback(code):
             client_id=client_config["web"]["client_id"],
             client_secret=client_config["web"]["client_secret"],
         )
+        token_file = f"token_{st.session_state['user_id']}.pkl"
 
-        with open("token.pkl", "wb") as f:
+        with open(token_file, "wb") as f:
             pickle.dump(creds, f)
 
         return creds
@@ -88,13 +89,20 @@ def handle_oauth_callback(code):
 # LOAD CREDENTIALS
 # =========================
 def load_creds():
-    if os.path.exists("token.pkl"):
-        with open("token.pkl", "rb") as f:
+    user_id = st.session_state.get("user_id")
+
+    if not user_id:
+        return None
+
+    token_file = f"token_{user_id}.pkl"
+
+    if os.path.exists(token_file):
+        with open(token_file, "rb") as f:
             creds = pickle.load(f)
 
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
-            with open("token.pkl", "wb") as f:
+            with open(token_file, "wb") as f:
                 pickle.dump(creds, f)
 
         return creds
