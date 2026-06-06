@@ -65,21 +65,25 @@ for key, value in defaults.items():
         st.session_state[key] = value
 # =========================
 # OAUTH CALLBACK
-# =========================
 def handle_login_callback():
     code = st.query_params.get("code")
 
     if not code:
         return
 
+    # prevent double execution
     if st.session_state.get("oauth_done"):
         return
 
     st.session_state["oauth_done"] = True
 
-    creds = handle_oauth_callback(code)
+    try:
+        creds = handle_oauth_callback(code)
 
-    if creds:
+        if not creds:
+            st.session_state["oauth_done"] = False
+            return
+
         profile = get_google_profile_info(creds)
 
         email = profile["email"]
@@ -91,7 +95,6 @@ def handle_login_callback():
             register_user(name, "google-oauth", email=email, provider="google")
             user = get_user_by_email(email)
 
-        # 🔥 CRITICAL ORDER
         st.session_state["user_id"] = user[0]
         st.session_state["username"] = name
         st.session_state["app_stage"] = "dashboard"
@@ -99,11 +102,9 @@ def handle_login_callback():
         st.query_params.clear()
         st.rerun()
 
-
-
-
-
-
+    except Exception as e:
+        st.session_state["oauth_done"] = False
+        st.error(f"OAuth failed: {e}")
 # =========================
 # AUTH PAGE
 # =========================
