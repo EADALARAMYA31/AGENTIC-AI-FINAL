@@ -118,7 +118,7 @@ def auth_page():
                 st.session_state["user_id"] = user[0]
                 st.session_state["username"] = user[1]
                 st.session_state["app_stage"] = "google"
-                st.session_state["oauth_processed"] = False
+                st.session_state["oauth_done"] = False
                 st.rerun()
             else:
                 st.error("Invalid login")

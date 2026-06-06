@@ -41,7 +41,7 @@ def get_calendar_auth_url():
 
     st.session_state["oauth_state"] = state
     st.session_state["code_verifier"] = flow.code_verifier
-    st.write("CODE VERIFIER LOGIN =", flow.code_verifier)
+
     return auth_url
 
 
@@ -56,7 +56,9 @@ def handle_oauth_callback(code):
     )
 
     flow.code_verifier = st.session_state.get("code_verifier")
-    st.write("CODE VERIFIER CALLBACK =", getattr(flow, "code_verifier", None))
+
+    print("VERIFIER =", flow.code_verifier)
+
     flow.fetch_token(code=code)
 
     return flow.credentials
