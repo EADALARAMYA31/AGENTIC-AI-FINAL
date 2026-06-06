@@ -38,8 +38,10 @@ def get_calendar_auth_url():
         access_type="offline",
         prompt="consent"
     )
-    st.write("STATE SAVED =", st.session_state.get("oauth_state"))
+
     st.session_state["oauth_state"] = state
+    st.session_state["code_verifier"] = flow.code_verifier
+    st.write("CODE VERIFIER LOGIN =", flow.code_verifier)
     return auth_url
 
 
@@ -47,23 +49,17 @@ def get_calendar_auth_url():
 # STEP 2: CALLBACK FIX
 # =====================
 def handle_oauth_callback(code):
-    try:
-        flow = Flow.from_client_config(
-            client_config,
-            scopes=SCOPES,
-            redirect_uri=REDIRECT_URI
-        )
+    flow = Flow.from_client_config(
+        client_config,
+        scopes=SCOPES,
+        redirect_uri=REDIRECT_URI
+    )
 
-        st.write("REDIRECT_URI =", REDIRECT_URI)
-        st.write("STATE =", st.query_params.get("state"))
+    flow.code_verifier = st.session_state.get("code_verifier")
+    st.write("CODE VERIFIER CALLBACK =", getattr(flow, "code_verifier", None))
+    flow.fetch_token(code=code)
 
-        flow.fetch_token(code=code)
-
-        return flow.credentials
-
-    except Exception as e:
-        st.error(f"FULL ERROR: {repr(e)}")
-        return None
+    return flow.credentials
 
 # =========================
 # LOAD CREDENTIALS
