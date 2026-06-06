@@ -54,7 +54,7 @@ st.set_page_config(
 # SESSION STATE INIT
 # =========================
 if "app_stage" not in st.session_state:
-    st.session_state["app_stage"] = "auth"
+    st.session_state["app_stage"] = None
 
 if "oauth_processed" not in st.session_state:
     st.session_state["oauth_processed"] = False
@@ -3986,11 +3986,11 @@ def dashboard():
 # =========================
 # ROUTER
 # =========================
-if st.session_state.get("app_stage") == "auth":
-    auth_page()
+if st.session_state.get("app_stage") == "dashboard":
+    dashboard()
 
 elif st.session_state.get("app_stage") == "google":
     google_page()
 
-elif st.session_state.get("app_stage") == "dashboard":
-    dashboard()
+else:
+    auth_page()
