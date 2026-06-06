@@ -47,8 +47,9 @@ def get_calendar_auth_url():
         prompt="consent"
     )
 
-    # store ONLY state (safe)
+    # 🔥 SAVE BOTH
     st.session_state["oauth_state"] = state
+    st.session_state["code_verifier"] = flow.code_verifier
 
     return auth_url
 
@@ -62,7 +63,9 @@ def handle_oauth_callback(code):
         redirect_uri=REDIRECT_URI
     )
 
-    # 🔥 THIS FIXES PKCE ISSUE
+    # 🔥 RESTORE CODE VERIFIER (THIS FIXES YOUR ERROR)
+    flow.code_verifier = st.session_state.get("code_verifier")
+
     flow.fetch_token(code=code)
 
     creds = flow.credentials
