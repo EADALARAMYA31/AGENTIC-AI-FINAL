@@ -44,67 +44,57 @@ from database import (
 # =========================
 # CONFIG
 # =========================
-st.set_page_config(page_title="AI Scheduler Pro MAX", page_icon="📅", layout="wide")
+st.set_page_config(
+    page_title="AI Scheduler Pro MAX",
+    page_icon="📅",
+    layout="wide"
+)
 
-
-if "redirect_dashboard" not in st.session_state:
-    st.session_state["redirect_dashboard"] = False
+# =========================
+# SESSION STATE INIT
+# =========================
 if "app_stage" not in st.session_state:
-    st.session_state["app_stage"] = None
-if st.session_state["app_stage"] is None:
     st.session_state["app_stage"] = "auth"
 
-
+if "oauth_processed" not in st.session_state:
+    st.session_state["oauth_processed"] = False
 
 if "user_id" not in st.session_state:
     st.session_state["user_id"] = None
 
 if "username" not in st.session_state:
     st.session_state["username"] = None
-
-if "google_connected" not in st.session_state:
-    st.session_state["google_connected"] = False
-
-if "auth_url" not in st.session_state:
-    st.session_state["auth_url"] = None
-
-if "oauth_done" not in st.session_state:
-    st.session_state["oauth_done"] = False
-
-if "navigation" not in st.session_state:
-    st.session_state["navigation"] = None
-
-st.write("TOP DEBUG: app_stage =", st.session_state["app_stage"])
-st.write("FULL URL PARAMS:", dict(st.query_params))
 # =========================
 # OAUTH CALLBACK
 # =========================
-code = st.query_params.get("code")
+def handle_login_callback():
+    code = st.query_params.get("code")
 
-if code:
-    creds = handle_oauth_callback(code)
+    if code and not st.session_state["oauth_processed"]:
 
-    if creds:
-        profile = get_google_profile_info(creds)
-        email = profile["email"]
-        name = profile["name"]
+        st.session_state["oauth_processed"] = True
 
-        user = get_user_by_email(email)
-        if not user:
-            register_user(name, "google-oauth", email=email, provider="google")
+        creds = handle_oauth_callback(code)
+
+        if creds:
+            profile = get_google_profile_info(creds)
+            email = profile["email"]
+            name = profile["name"]
+
             user = get_user_by_email(email)
 
-        st.session_state["user_id"] = user[0]
-        st.session_state["username"] = name
+            if not user:
+                register_user(name, "google-oauth", email=email, provider="google")
+                user = get_user_by_email(email)
 
-        # 🔥 CRITICAL FIX
-        st.session_state["app_stage"] = "dashboard"
+            st.session_state["user_id"] = user[0]
+            st.session_state["username"] = name
+            st.session_state["app_stage"] = "dashboard"
 
-        # cleanup ONLY after success
-        st.query_params.clear()
+            st.query_params.clear()
+            st.rerun()
 
-        st.rerun()
-
+handle_login_callback()
 
 
 
@@ -148,19 +138,14 @@ def auth_page():
 # GOOGLE PAGE
 # =========================
 def google_page():
-    st.write("GOOGLE PAGE")
-    st.write(dict(st.session_state))
     st.title("🔗 Google Calendar Connect")
 
-    if st.session_state.get("google_connected"):
-        st.session_state["app_stage"] = "dashboard"
-        st.rerun()
+    st.write("Welcome:", st.session_state.get("username"))
 
-    if not st.session_state.get("auth_url"):
-        st.session_state["auth_url"] = get_calendar_auth_url()
-    st.write("AUTH URL:")
-    st.code(st.session_state["auth_url"])
-    st.link_button("Continue with Google", st.session_state["auth_url"])
+    # ❌ DO NOT cache auth_url forever (causes OAuth issues)
+    auth_url = get_calendar_auth_url()
+
+    st.link_button("Continue with Google", auth_url)
 
 # =========================
 # DASHBOARD
@@ -4009,7 +3994,3 @@ elif st.session_state.get("app_stage") == "google":
 
 elif st.session_state.get("app_stage") == "dashboard":
     dashboard()
-
-else:
-    st.session_state["app_stage"] = "auth"
-    st.rerun()

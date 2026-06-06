@@ -8,7 +8,7 @@ from googleapiclient.discovery import build
 # =========================
 # CONFIG
 # =========================
-REDIRECT_URI = "https://agentic-ai-final.streamlit.app/oauth2callback"
+REDIRECT_URI = "https://agentic-ai-final.streamlit.app"
 SCOPES = ["https://www.googleapis.com/auth/calendar", "https://www.googleapis.com/auth/userinfo.profile", "https://www.googleapis.com/auth/userinfo.email", "openid"]
 client_config = {
     "web": {
