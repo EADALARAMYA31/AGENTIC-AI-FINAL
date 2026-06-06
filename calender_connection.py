@@ -53,13 +53,10 @@ def handle_oauth_callback(code):
             redirect_uri=REDIRECT_URI
         )
 
-        # 🚨 FORCE NON-PKCE MODE
+        # IMPORTANT: do NOT set code_verifier
         flow.redirect_uri = REDIRECT_URI
 
-        creds = flow.fetch_token(
-            code=code,
-            include_client_id=True
-        )
+        flow.fetch_token(code=code)
 
         creds = flow.credentials
 
