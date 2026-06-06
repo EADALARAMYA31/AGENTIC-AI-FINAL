@@ -35,18 +35,12 @@ def get_calendar_auth_url():
 
     auth_url, state = flow.authorization_url(
         access_type="offline",
+        include_granted_scopes="true",
         prompt="consent"
     )
 
-    #st.session_state["oauth_state"] = state
+    st.session_state["oauth_state"] = state
 
-    # Save verifier globally
-    with open("oauth_verifier.txt", "w") as f:
-        f.write(flow.code_verifier)
-    st.session_state["code_verifier"] = flow.code_verifier
-
-    st.write("SAVED VERIFIER =", flow.code_verifier)
-    st.write("WRITING VERIFIER =", flow.code_verifier)
     return auth_url
 
 
@@ -55,26 +49,31 @@ def get_calendar_auth_url():
 # =====================
 def handle_oauth_callback(code):
     try:
-        with open("oauth_verifier.txt", "r") as f:
-            verifier = f.read()
-
         flow = Flow.from_client_config(
             client_config,
             scopes=SCOPES,
             redirect_uri=REDIRECT_URI
         )
 
-        flow.code_verifier = verifier
+        # IMPORTANT FIX
+        flow.redirect_uri = REDIRECT_URI
+
+        # DO NOT set code_verifier manually
+        # Google handles PKCE internally in this flow
 
         flow.fetch_token(code=code)
-        st.success("TOKEN SUCCESS")
-        return flow.credentials
+
+        creds = flow.credentials
+
+        # SAVE TOKEN PROPERLY
+        with open("token.pkl", "wb") as f:
+            pickle.dump(creds, f)
+
+        return creds
 
     except Exception as e:
-        st.error(repr(e))
-        import traceback
-        st.code(traceback.format_exc())
-    return None
+        st.error(f"OAuth Error: {e}")
+        return None
 # =========================
 # LOAD CREDENTIALS
 # =========================
