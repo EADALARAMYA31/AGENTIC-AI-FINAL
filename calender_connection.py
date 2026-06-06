@@ -9,51 +9,61 @@ from googleapiclient.discovery import build
 # CONFIG
 # =========================
 REDIRECT_URI = "https://agentic-ai-final.streamlit.app/"
-SCOPES = ["https://www.googleapis.com/auth/calendar", "https://www.googleapis.com/auth/userinfo.profile", "https://www.googleapis.com/auth/userinfo.email", "openid"]
+
+SCOPES = [
+    "https://www.googleapis.com/auth/calendar",
+    "https://www.googleapis.com/auth/userinfo.profile",
+    "https://www.googleapis.com/auth/userinfo.email",
+    "openid"
+]
+
 client_config = {
     "web": {
         "client_id": st.secrets["GOOGLE_CLIENT_ID"],
         "client_secret": st.secrets["GOOGLE_CLIENT_SECRET"],
         "auth_uri": "https://accounts.google.com/o/oauth2/auth",
         "token_uri": "https://oauth2.googleapis.com/token",
-        "redirect_uris":[REDIRECT_URI]
+        "redirect_uris": [REDIRECT_URI]
     }
 }
 
 # =========================
-# 1. GENERATE GOOGLE LOGIN URL
+# FLOW CREATION (ONLY ONCE)
 # =========================
 def get_flow():
     return Flow.from_client_config(
         client_config,
         scopes=SCOPES,
-        redirect_uri=REDIRECT_URI,
+        redirect_uri=REDIRECT_URI
     )
 
+# =========================
+# LOGIN URL
+# =========================
 def get_calendar_auth_url():
     flow = get_flow()
 
     auth_url, state = flow.authorization_url(
         access_type="offline",
-        include_granted_scopes="true",
         prompt="consent"
     )
 
+    # 🔥 SAVE FLOW (IMPORTANT FOR PKCE)
+    st.session_state["oauth_flow"] = flow
     st.session_state["oauth_state"] = state
+
     return auth_url
 
-
 # =========================
-# 2. HANDLE CALLBACK
+# CALLBACK (FIXED)
 # =========================
 def handle_oauth_callback(code):
-    flow = Flow.from_client_config(
-        client_config,
-        scopes=SCOPES,
-        redirect_uri=REDIRECT_URI
-    )
+    flow = st.session_state.get("oauth_flow")
 
-    # IMPORTANT: ONLY THIS
+    if not flow:
+        raise Exception("OAuth flow lost. Please restart login.")
+
+    # 🔥 THIS FIXES YOUR ERROR
     flow.fetch_token(code=code)
 
     creds = flow.credentials
@@ -64,15 +74,15 @@ def handle_oauth_callback(code):
     return creds
 
 # =========================
-# 3. LOAD SAVED CREDENTIALS
+# LOAD CREDENTIALS
 # =========================
 def load_creds():
     creds = None
+
     if os.path.exists("token.pkl"):
         with open("token.pkl", "rb") as token:
             creds = pickle.load(token)
 
-    # Refresh if expired
     if creds and creds.expired and creds.refresh_token:
         creds.refresh(Request())
         with open("token.pkl", "wb") as token:
@@ -80,9 +90,8 @@ def load_creds():
 
     return creds
 
-
 # =========================
-# 4. GOOGLE CALENDAR SERVICE
+# GOOGLE CALENDAR SERVICE
 # =========================
 def get_calendar_service():
     creds = load_creds()
@@ -90,11 +99,9 @@ def get_calendar_service():
         return None
     return build("calendar", "v3", credentials=creds)
 
-
 # =========================
-# 5. GOOGLE PROFILE NAME
+# PROFILE INFO
 # =========================
 def get_google_profile_info(creds):
     service = build("oauth2", "v2", credentials=creds)
     return service.userinfo().get().execute()
-
