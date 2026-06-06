@@ -133,10 +133,6 @@ def auth_page():
 # GOOGLE PAGE
 # =========================
 def google_page():
-
-    if st.query_params.get("code"):
-        handle_login_callback()
-
     st.title("Google Connect")
 
     auth_url = get_calendar_auth_url()
@@ -3993,7 +3989,8 @@ def dashboard():
 
 
 # 🚨 MUST BE CALLED HERE (NOT INSIDE ANY PAGE)
-
+if st.query_params.get("code"):
+    handle_login_callback()
 
 stage = st.session_state.get("app_stage", "auth")
 
