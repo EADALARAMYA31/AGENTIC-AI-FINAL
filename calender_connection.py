@@ -50,18 +50,27 @@ def get_calendar_auth_url():
 # STEP 2: CALLBACK FIX
 # =====================
 def handle_oauth_callback(code):
-    flow = Flow.from_client_config(
-        client_config,
-        scopes=SCOPES,
-        redirect_uri=REDIRECT_URI
-    )
+    import requests
 
-    flow.fetch_token(code=code)
+    token_url = "https://oauth2.googleapis.com/token"
 
-    creds = flow.credentials
+    data = {
+        "code": code,
+        "client_id": st.secrets["GOOGLE_CLIENT_ID"],
+        "client_secret": st.secrets["GOOGLE_CLIENT_SECRET"],
+        "redirect_uri": "https://agentic-ai-final.streamlit.app/",
+        "grant_type": "authorization_code"
+    }
 
-    with open("token.pkl", "wb") as f:
-        pickle.dump(creds, f)
+    response = requests.post(token_url, data=data)
+
+    if response.status_code != 200:
+        print(response.text)
+        return None
+
+    token_data = response.json()
+
+    creds = token_data  # simplified storage
 
     return creds
 

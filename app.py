@@ -79,27 +79,20 @@ def handle_login_callback():
 
     st.session_state["oauth_done"] = True
 
-    try:
-        creds = handle_oauth_callback(code)
+    creds = handle_oauth_callback(code)
 
-        if not creds:
-            st.session_state["oauth_done"] = False
-            return
-
-        profile = get_google_profile_info(creds)
-
-        st.session_state.update({
-            "user_id": 1,
-            "username": profile["name"],
-            "app_stage": "dashboard"
-        })
-
-        st.query_params.clear()
-        st.rerun()
-
-    except Exception as e:
+    if not creds:
         st.session_state["oauth_done"] = False
-        st.error(f"OAuth failed: {str(e)}")
+        return
+
+    st.session_state.update({
+        "user_id": 1,
+        "username": "Google User",
+        "app_stage": "dashboard"
+    })
+
+    st.query_params.clear()
+    st.rerun()
 # =========================
 # AUTH PAGE
 # =========================
