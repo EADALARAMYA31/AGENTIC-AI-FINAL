@@ -30,26 +30,24 @@ client_config = {
 # =========================
 # FLOW CREATION (ONLY ONCE)
 # =========================
-def get_flow():
-    return Flow.from_client_config(
-        client_config,
-        scopes=SCOPES,
-        redirect_uri=REDIRECT_URI
-    )
+
 
 # =========================
 # LOGIN URL
 # =========================
 def get_calendar_auth_url():
-    flow = get_flow()
+    flow = Flow.from_client_config(
+        client_config,
+        scopes=SCOPES,
+        redirect_uri=REDIRECT_URI
+    )
 
     auth_url, state = flow.authorization_url(
         access_type="offline",
         prompt="consent"
     )
 
-    # 🔥 SAVE FLOW (IMPORTANT FOR PKCE)
-    st.session_state["oauth_flow"] = flow
+    # store ONLY state (safe)
     st.session_state["oauth_state"] = state
 
     return auth_url
@@ -58,12 +56,13 @@ def get_calendar_auth_url():
 # CALLBACK (FIXED)
 # =========================
 def handle_oauth_callback(code):
-    flow = st.session_state.get("oauth_flow")
+    flow = Flow.from_client_config(
+        client_config,
+        scopes=SCOPES,
+        redirect_uri=REDIRECT_URI
+    )
 
-    if not flow:
-        raise Exception("OAuth flow lost. Please restart login.")
-
-    # 🔥 THIS FIXES YOUR ERROR
+    # 🔥 THIS FIXES PKCE ISSUE
     flow.fetch_token(code=code)
 
     creds = flow.credentials

@@ -71,6 +71,7 @@ def handle_login_callback():
     if not code:
         return
 
+    # IMPORTANT: prevent repeated execution
     if st.session_state.get("oauth_done"):
         return
 
@@ -79,7 +80,7 @@ def handle_login_callback():
     try:
         creds = handle_oauth_callback(code)
     except Exception as e:
-        st.error("OAuth failed: " + str(e))
+        st.error(f"OAuth failed: {e}")
         st.session_state["oauth_done"] = False
         return
 
