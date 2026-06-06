@@ -67,11 +67,13 @@ def handle_oauth_callback(code):
         flow.code_verifier = verifier
 
         flow.fetch_token(code=code)
-
+        st.success("TOKEN SUCCESS")
         return flow.credentials
 
     except Exception as e:
-        st.error(str(e))
+        st.error(repr(e))
+        import traceback
+        st.code(traceback.format_exc())
         return None
 # =========================
 # LOAD CREDENTIALS
