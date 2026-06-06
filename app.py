@@ -119,7 +119,7 @@ def auth_page():
             if user:
                 st.session_state["user_id"] = user[0]
                 st.session_state["username"] = user[1]
-                st.session_state["app_stage"] = "dashboard"
+                st.session_state["app_stage"] = "google"
                 st.session_state["oauth_done"] = False
                 st.rerun()
             else:
