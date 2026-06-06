@@ -39,10 +39,10 @@ def get_calendar_auth_url():
     )
 
     st.session_state["oauth_state"] = state
-    st.session_state["code_verifier"] = flow.code_verifier
 
-    st.write("LOGIN VERIFIER =", flow.code_verifier)
-    st.write("STATE =", state)
+    # Save verifier globally
+    with open("oauth_verifier.txt", "w") as f:
+        f.write(flow.code_verifier)
 
     return auth_url
 
@@ -52,16 +52,10 @@ def get_calendar_auth_url():
 # =====================
 def handle_oauth_callback(code):
 
-    verifier = st.session_state.get("code_verifier")
-
-    st.write("DEBUG CODE =", code)
-    st.write("CALLBACK VERIFIER =", verifier)
-
-    if not verifier:
-        st.error("Code verifier missing from session")
-        return None
-
     try:
+        with open("oauth_verifier.txt", "r") as f:
+            verifier = f.read().strip()
+
         flow = Flow.from_client_config(
             client_config,
             scopes=SCOPES,
@@ -70,19 +64,12 @@ def handle_oauth_callback(code):
 
         flow.code_verifier = verifier
 
-        st.write("FETCHING TOKEN...")
-
         flow.fetch_token(code=code)
 
-        st.write("TOKEN SUCCESS")
-
-        creds = flow.credentials
-
-        return creds
+        return flow.credentials
 
     except Exception as e:
-        st.error(f"TOKEN FAILED: {e}")
-        print("TOKEN FAILED:", e)
+        st.error(str(e))
         return None
 # =========================
 # LOAD CREDENTIALS
