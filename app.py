@@ -81,9 +81,7 @@ st.write("FULL URL PARAMS:", dict(st.query_params))
 # =========================
 code = st.query_params.get("code")
 
-if code and not st.session_state.get("oauth_done", False):
-    st.session_state["oauth_done"] = True
-
+if code:
     creds = handle_oauth_callback(code)
 
     if creds:
@@ -99,11 +97,10 @@ if code and not st.session_state.get("oauth_done", False):
         st.session_state["user_id"] = user[0]
         st.session_state["username"] = name
 
-        # 🔥 IMPORTANT: FORCE dashboard stage
+        # 🔥 CRITICAL FIX
         st.session_state["app_stage"] = "dashboard"
-        st.session_state["google_connected"] = True
 
-        # 🔥 cleanup AFTER setting state
+        # cleanup ONLY after success
         st.query_params.clear()
 
         st.rerun()
