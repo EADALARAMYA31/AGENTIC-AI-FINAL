@@ -3951,9 +3951,9 @@ def dashboard():
         st.subheader("👨‍💻 Developer Information")
 
         st.success("""
-        Name: Ramya
+        Name: AI engineers
 
-        Role: Full Stack Developer
+        Role: Full Stack Developers
 
         Project: Smart Timetable AI
 
