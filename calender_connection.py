@@ -76,6 +76,10 @@ def handle_oauth_callback(code):
             client_id=client_config["web"]["client_id"],
             client_secret=client_config["web"]["client_secret"],
         )
+        profile = get_google_profile_info(creds)
+
+        email = profile["email"].strip().lower()
+
         token_file = f"token_{email}.pkl"
 
         with open(token_file, "wb") as f:

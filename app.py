@@ -83,7 +83,7 @@ def handle_login_callback():
     profile = get_google_profile_info(creds)
 
     email = profile["email"].strip().lower()
-
+    st.session_state["email"] = email
     user = get_user_by_email(email)
 
 # ✅ AUTO CREATE USER IF NOT EXISTS
@@ -100,7 +100,7 @@ def handle_login_callback():
 
     st.session_state["user_id"] = user[0]
     st.session_state["username"] = user[1]
-    st.session_state["email"] = email
+   
     st.session_state["app_stage"] = "dashboard"
     st.session_state["google_connected"] = True
     st.session_state["oauth_handled"] = True
