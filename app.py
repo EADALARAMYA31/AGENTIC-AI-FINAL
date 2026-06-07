@@ -3119,31 +3119,21 @@ def dashboard():
 
         st.subheader("⚡ Quick Actions")
 
-        q1, q2, q3 = st.columns(3)
+        #st.subheader("⚡ Quick Actions")
 
-        with q1:
-            if st.button(
-                "📅 Create Event",
-                use_container_width=True
-            ):
-                st.session_state.navigation = "📅 Create Event"
-                st.rerun()
+        col1, col2, col3 = st.columns(3)
 
-        with q2:
-            if st.button(
-                "📚 Add Assignment",
-                use_container_width=True
-            ):
-                st.session_state.navigation = "📚 Assignments"
-                st.rerun()
+        with col1:
+            if st.button("📅 Create Event"):
+                st.info("👉 Go to sidebar and select '📅 Create Event'")
 
-        with q3:
-            if st.button(
-                "🎯 Update Goals",
-                use_container_width=True
-            ):
-                st.session_state.navigation = "🎯 Goals"
-                st.rerun()
+        with col2:
+            if st.button("📚 Add Assignment"):
+                st.info("👉 Go to sidebar and select '📚 Assignments'")
+
+        with col3:
+            if st.button("🎯 Update Goals"):
+                st.info("👉 Go to sidebar and select '🎯 Goals'")
     
     elif page == "🌤️ Daily Motivation":
 
