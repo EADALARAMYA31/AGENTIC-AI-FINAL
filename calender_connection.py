@@ -72,7 +72,7 @@ def handle_oauth_callback(code):
         creds = Credentials(
             token=token_data["access_token"],
             refresh_token=token_data.get("refresh_token"),
-            token_uri=token_url,
+            token_uri="https://oauth2.googleapis.com/token",  
             client_id=client_config["web"]["client_id"],
             client_secret=client_config["web"]["client_secret"],
         )
@@ -93,7 +93,7 @@ def handle_oauth_callback(code):
 # =========================
 # LOAD CREDENTIALS
 # =========================
-def load_creds(user_id):
+def load_creds(email):
     token_file = f"token_{email}.pkl"
 
     if os.path.exists(token_file):

@@ -415,9 +415,11 @@ def dashboard():
             if not email:
                 st.error("Google not connected")
                 st.stop()
-            service = get_calendar_service(email) if email else None
+            service = get_calendar_service(email)
             st.write("SERVICE:", service)
-            if service:
+            if service is None:
+                st.warning("Google Calendar not connected, event saved locally only")
+            else:
                 try:
                     service.events().insert(
                         calendarId="primary",
@@ -437,8 +439,6 @@ def dashboard():
                     st.success("✅ Event Created & Synced with Google Calendar")
                 except Exception as e:
                     st.warning(f"Event saved locally but Google sync failed: {e}")
-            else:
-                st.success("✅ Event Created Successfully")
 
             st.markdown(f"""
             <div style="padding:12px;border-radius:8px;background:#e6f7ff;margin-top:10px;">
