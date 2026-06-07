@@ -3126,7 +3126,7 @@ def dashboard():
                 "📅 Create Event",
                 use_container_width=True
             ):
-                st.session_state["navigation"] = "📅 Create Event"
+                st.session_stat.navigation = "📅 Create Event"
                 st.rerun()
 
         with q2:
@@ -3134,7 +3134,7 @@ def dashboard():
                 "📚 Add Assignment",
                 use_container_width=True
             ):
-                st.session_state["navigation"] = "📚 Assignments"
+                st.session_state.navigation = "📚 Assignments"
                 st.rerun()
 
         with q3:
@@ -3142,7 +3142,7 @@ def dashboard():
                 "🎯 Update Goals",
                 use_container_width=True
             ):
-                st.session_state["navigation"] = "🎯 Goals"
+                st.session_state.navigation = "🎯 Goals"
                 st.rerun()
     
     elif page == "🌤️ Daily Motivation":
