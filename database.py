@@ -1,7 +1,7 @@
 import psycopg2
 import hashlib
 from datetime import date
-
+from calender_connection import get_calendar_service
 # ================= DATABASE CONNECTION =================
 import os
 #import psycopg2
@@ -190,6 +190,7 @@ def insert_event(
 
     cur.close()
     conn.close()
+    # 🔥 ADD THIS LINE (THIS IS THE FIX)
 
 
 def get_events(user_id):

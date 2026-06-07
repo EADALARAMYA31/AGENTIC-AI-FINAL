@@ -411,6 +411,7 @@ def dashboard():
             st.write("EVENTS AFTER INSERT:", events_after_insert)
             # Google Calendar Sync
             service = get_calendar_service(st.session_state["user_id"])
+            st.write("SERVICE:", service)
             if service:
                 try:
                     service.events().insert(

@@ -1,6 +1,7 @@
 import os
 import pickle
 import streamlit as st
+
 from google_auth_oauthlib.flow import Flow
 from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
@@ -121,3 +122,4 @@ def get_calendar_service(user_id):
 def get_google_profile_info(creds):
     service = build("oauth2", "v2", credentials=creds)
     return service.userinfo().get().execute()
+
