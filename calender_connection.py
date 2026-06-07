@@ -127,3 +127,26 @@ def get_google_profile_info(creds):
     service = build("oauth2", "v2", credentials=creds)
     return service.userinfo().get().execute()
 
+def add_goal_to_google_calendar(email, goal_name):
+    service = get_calendar_service(email)
+
+    if not service:
+        return
+
+    event = {
+        "summary": f"🎯 Goal: {goal_name}",
+        "description": "Goal tracking event",
+        "start": {
+            "dateTime": "2026-01-01T09:00:00",
+            "timeZone": "Asia/Kolkata"
+        },
+        "end": {
+            "dateTime": "2026-01-01T10:00:00",
+            "timeZone": "Asia/Kolkata"
+        }
+    }
+
+    service.events().insert(
+        calendarId="primary",
+        body=event
+    ).execute()

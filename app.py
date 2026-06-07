@@ -17,7 +17,8 @@ from calender_connection import (
     handle_oauth_callback,
     load_creds,
     get_google_profile_info,
-    get_calendar_service
+    get_calendar_service,
+    add_goal_to_google_calendar
 )
 
 from database import (
@@ -763,6 +764,33 @@ def dashboard():
                 str(deadline),
                 priority
             )
+            email = st.session_state.get("email")
+
+            if email:
+                try:
+                    service = get_calendar_service(email)
+
+                    if service:
+                        event = {
+                            "summary": f"📚 {name}",
+                            "description": f"Subject: {subject}",
+                            "start": {
+                            "dateTime": f"{deadline}T09:00:00",
+                            "timeZone": "Asia/Kolkata"
+                            },
+                            "end": {
+                                "dateTime": f"{deadline}T10:00:00",
+                                "timeZone": "Asia/Kolkata"
+                            }
+                        }
+
+                        service.events().insert(
+                            calendarId="primary",
+                            body=event
+                        ).execute()
+
+                except Exception as e:
+                    st.warning(f"Saved locally but Google sync failed: {e}")
 
             st.success("✅ Assignment Added Successfully")
             #st.balloons()
@@ -2669,8 +2697,16 @@ def dashboard():
                 goal_name,
                 0
             )
+            email = st.session_state.get("email")
 
-            st.success("Goal Added Successfully")
+            if email:
+                try:
+                    add_goal_to_google_calendar(email, goal_name)
+                except Exception as e:
+                    st.warning(f"Goal saved but Google sync failed: {e}")
+
+            else:
+                st.warning("Google not connected — goal saved only locally")
             #st.balloons()
             st.rerun()
 
