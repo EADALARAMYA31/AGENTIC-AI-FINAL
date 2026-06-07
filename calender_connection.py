@@ -76,7 +76,7 @@ def handle_oauth_callback(code):
             client_id=client_config["web"]["client_id"],
             client_secret=client_config["web"]["client_secret"],
         )
-        token_file = f"token_{st.session_state['user_id']}.pkl"
+        token_file = f"token_{email}.pkl"
 
         with open(token_file, "wb") as f:
             pickle.dump(creds, f)
@@ -90,7 +90,7 @@ def handle_oauth_callback(code):
 # LOAD CREDENTIALS
 # =========================
 def load_creds(user_id):
-    token_file = f"token_{user_id}.pkl"
+    token_file = f"token_{email}.pkl"
 
     if os.path.exists(token_file):
         with open(token_file, "rb") as f:
@@ -108,8 +108,8 @@ def load_creds(user_id):
 # =========================
 # GOOGLE CALENDAR SERVICE
 # =========================
-def get_calendar_service(user_id):
-    creds = load_creds(user_id)
+def get_calendar_service(email):
+    creds = load_creds(email)
 
     if not creds:
         return None
