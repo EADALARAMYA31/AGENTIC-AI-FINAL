@@ -3126,7 +3126,7 @@ def dashboard():
                 "📅 Create Event",
                 use_container_width=True
             ):
-                st.session_stat.navigation = "📅 Create Event"
+                st.session_state.navigation = "📅 Create Event"
                 st.rerun()
 
         with q2:
