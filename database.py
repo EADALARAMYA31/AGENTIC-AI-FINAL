@@ -44,6 +44,23 @@ def register_user(username, password, email=None, provider="local"):
     cur = conn.cursor()
 
     try:
+        # Check if username or email already exists
+        if email:
+            cur.execute("""
+                SELECT id
+                FROM users
+                WHERE username = %s OR email = %s
+            """, (username, email))
+        else:
+            cur.execute("""
+                SELECT id
+                FROM users
+                WHERE username = %s
+            """, (username,))
+
+        if cur.fetchone():
+            return False  # User already exists
+
         hashed = hash_password(password)
 
         cur.execute("""
@@ -57,12 +74,11 @@ def register_user(username, password, email=None, provider="local"):
     except Exception as e:
         conn.rollback()
         print("REGISTER ERROR:", e)
-        raise e
+        return False
 
     finally:
         cur.close()
         conn.close()
-
 
 
 def login_user(username, password):
